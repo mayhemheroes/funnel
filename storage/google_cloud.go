@@ -3,17 +3,14 @@ package storage
 import (
 	"context"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
+	"io"
 	"strings"
-	"time"
 
 	"github.com/ohsu-comp-bio/funnel/config"
-	"github.com/ohsu-comp-bio/funnel/util/fsutil"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/storage/v1"
+	"google.golang.org/api/option"
+	"google.golang.org/api/iterator"
+	"cloud.google.com/go/storage"
 )
 
 // The gs url protocol
@@ -21,38 +18,21 @@ const gsProtocol = "gs://"
 
 // GoogleCloud provides access to an GS object store.
 type GoogleCloud struct {
-	svc *storage.Service
+	svc *storage.Client
 }
 
 // NewGoogleCloud creates an GoogleCloud client instance, give an endpoint URL
 // and a set of authentication credentials.
 func NewGoogleCloud(conf config.GoogleCloudStorage) (*GoogleCloud, error) {
 	ctx := context.Background()
-	client := &http.Client{}
+	var opts option.ClientOption = nil
 
 	if conf.CredentialsFile != "" {
 		// Pull the client configuration (e.g. auth) from a given account file.
 		// This is likely downloaded from Google Cloud manually via IAM & Admin > Service accounts.
-		bytes, rerr := ioutil.ReadFile(conf.CredentialsFile)
-		if rerr != nil {
-			return nil, rerr
-		}
-
-		config, tserr := google.JWTConfigFromJSON(bytes, storage.CloudPlatformScope)
-		if tserr != nil {
-			return nil, tserr
-		}
-		client = config.Client(ctx)
-	} else {
-		// Pull the information (auth and other config) from the environment,
-		// which is useful when this code is running in a Google Compute instance.
-		defClient, err := google.DefaultClient(ctx, storage.CloudPlatformScope)
-		if err == nil {
-			client = defClient
-		}
+		opts = option.WithCredentialsFile(conf.CredentialsFile)
 	}
-
-	svc, cerr := storage.New(client)
+	svc, cerr := storage.NewClient(ctx, opts)
 	if cerr != nil {
 		return nil, cerr
 	}
@@ -67,18 +47,18 @@ func (gs *GoogleCloud) Stat(ctx context.Context, url string) (*Object, error) {
 		return nil, err
 	}
 
-	obj, err := gs.svc.Objects.Get(u.bucket, u.path).Context(ctx).Do()
+	obj := gs.svc.Bucket(u.bucket).Object(u.path)
+	attr, err := obj.Attrs(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("googleStorage: calling stat on object %s: %v", url, err)
+		return nil, err
 	}
 
-	modtime, _ := time.Parse(time.RFC3339, obj.Updated)
 	return &Object{
 		URL:          url,
-		Name:         obj.Name,
-		ETag:         obj.Etag,
-		Size:         int64(obj.Size),
-		LastModified: modtime,
+		Name:         attr.Name,
+		ETag:         attr.Etag,
+		Size:         int64(attr.Size),
+		LastModified: attr.Updated,
 	}, nil
 }
 
@@ -91,6 +71,28 @@ func (gs *GoogleCloud) List(ctx context.Context, url string) ([]*Object, error) 
 
 	var objects []*Object
 
+	query := &storage.Query{Prefix: u.path}
+
+	//var names []string
+	it := gs.svc.Bucket(u.bucket).Objects(ctx, query)
+	for {
+    attrs, err := it.Next()
+    if err == iterator.Done {
+        break
+    }
+		if strings.HasSuffix(attrs.Name, "/") {
+			continue
+		}
+		objects = append(objects, &Object{
+			URL:          gsProtocol + attrs.Bucket + "/" + attrs.Name,
+			Name:         attrs.Name,
+			ETag:         attrs.Etag,
+			Size:         int64(attrs.Size),
+			LastModified: attrs.Updated,
+		})
+	}
+
+		/*
 	err = gs.svc.Objects.List(u.bucket).Prefix(u.path).Pages(ctx,
 		func(objs *storage.Objects) error {
 
@@ -111,6 +113,7 @@ func (gs *GoogleCloud) List(ctx context.Context, url string) ([]*Object, error) 
 			}
 			return nil
 		})
+*/
 
 	if err != nil {
 		return nil, err
@@ -120,38 +123,35 @@ func (gs *GoogleCloud) List(ctx context.Context, url string) ([]*Object, error) 
 
 // Get copies an object from GS to the host path.
 func (gs *GoogleCloud) Get(ctx context.Context, url, path string) (*Object, error) {
-	obj, err := gs.Stat(ctx, url)
-	if err != nil {
-		return nil, err
-	}
-
 	u, err := gs.parse(url)
 	if err != nil {
 		return nil, err
 	}
-
-	resp, err := gs.svc.Objects.Get(u.bucket, u.path).Context(ctx).Download()
+	obj := gs.svc.Bucket(u.bucket).Object(u.path)
+	attr, err := obj.Attrs(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	// Read it back.
+	r, err := obj.NewReader(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("googleStorage: getting object %s: %v", url, err)
 	}
-
 	dest, err := os.Create(path)
 	if err != nil {
 		return nil, fmt.Errorf("googleStorage: creating file %s: %v", path, err)
 	}
-
-	_, copyErr := io.Copy(dest, fsutil.Reader(ctx, resp.Body))
-	closeErr := dest.Close()
-
-	if copyErr != nil {
-		return nil, fmt.Errorf("googleStorage: copying file: %v", copyErr)
+	defer r.Close()
+	if _, err := io.Copy(dest, r); err != nil {
+		return nil, fmt.Errorf("googleStorage: copying file: %v", err)
 	}
-
-	if closeErr != nil {
-		return nil, fmt.Errorf("googleStorage: closing file: %v", closeErr)
-	}
-
-	return obj, nil
+	return &Object{
+		URL:          gsProtocol + attr.Bucket + "/" + attr.Name,
+		Name:         attr.Name,
+		ETag:         attr.Etag,
+		Size:         int64(attr.Size),
+		LastModified: attr.Updated,
+	}, nil
 }
 
 // Put copies an object (file) from the host path to GS.
@@ -167,12 +167,13 @@ func (gs *GoogleCloud) Put(ctx context.Context, url, path string) (*Object, erro
 	}
 	defer reader.Close()
 
-	obj := &storage.Object{
-		Name: u.path,
-	}
+	obj := gs.svc.Bucket(u.bucket).Object(u.path)
 
-	_, err = gs.svc.Objects.Insert(u.bucket, obj).Media(fsutil.Reader(ctx, reader)).Do()
-	if err != nil {
+	w := obj.NewWriter(ctx)
+	if _, err := io.Copy(w, reader); err != nil {
+		return nil, fmt.Errorf("googleStorage: copying file: %v", err)
+	}
+	if err := w.Close(); err != nil {
 		return nil, fmt.Errorf("googleStorage: uploading object %s: %v", url, err)
 	}
 	return gs.Stat(ctx, url)
@@ -186,15 +187,16 @@ func (gs *GoogleCloud) Join(url, path string) (string, error) {
 // UnsupportedOperations describes which operations (Get, Put, etc) are not
 // supported for the given URL.
 func (gs *GoogleCloud) UnsupportedOperations(url string) UnsupportedOperations {
-	u, err := gs.parse(url)
+	_, err := gs.parse(url)
 	if err != nil {
 		return AllUnsupported(err)
 	}
-	_, err = gs.svc.Buckets.Get(u.bucket).Do()
-	if err != nil {
-		err = fmt.Errorf("googleStorage: failed to find bucket: %s. error: %v", u.bucket, err)
-		return AllUnsupported(err)
-	}
+	//TODO: Check the bucket?
+	//_, err = gs.svc.Buckets.Get(u.bucket).Do()
+	//if err != nil {
+	//	err = fmt.Errorf("googleStorage: failed to find bucket: %s. error: %v", u.bucket, err)
+	//	return AllUnsupported(err)
+	//}
 	return AllSupported()
 }
 

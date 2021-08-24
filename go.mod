@@ -5,6 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go/datastore v1.1.0
 	cloud.google.com/go/pubsub v1.2.0
+	cloud.google.com/go/storage v1.5.0
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/Shopify/sarama v1.26.1
