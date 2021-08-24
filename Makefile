@@ -54,6 +54,17 @@ proto:
 		--grpc-gateway_out=logtostderr=true:. \
 		events.proto
 
+openapi:
+	@rm -rf tes/openapi
+	@java -jar openapi-generator-cli.jar generate \
+		-i tes/task-execution-schemas/openapi/task_execution_service.openapi.yaml \
+		-g go-server -o tmp --additional-properties sourceFolder=openapi
+	@mv tmp/openapi tes/
+
+openapi-depends:
+	@curl -O https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/5.2.1/openapi-generator-cli-5.2.1.jar
+
+
 # Start API reference doc server
 serve-doc:
 	@go get golang.org/x/tools/cmd/godoc
