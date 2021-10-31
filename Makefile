@@ -37,21 +37,25 @@ build:
 
 # Generate the protobuf/gRPC code
 proto:
-	@cd tes && protoc \
+	@cd tes/tesproto && protoc \
 		$(PROTO_INC) \
-		--go_out=plugins=grpc:. \
-		--grpc-gateway_out=logtostderr=true:. \
+		--go_out=. \
+  	--go_opt paths=source_relative \
 		tes.proto
 	@cd compute/scheduler && protoc \
 		$(PROTO_INC) \
-		--go_out=plugins=grpc:. \
-		--grpc-gateway_out=logtostderr=true:. \
+		--go_out=. \
+		--go_opt paths=source_relative \
+		--go-grpc_out ./ \
+    --go-grpc_opt paths=source_relative \
 		scheduler.proto
 	@cd events && protoc \
 		$(PROTO_INC) \
-		-I ../tes \
-		--go_out=Mtes.proto=github.com/ohsu-comp-bio/funnel/tes,plugins=grpc:. \
-		--grpc-gateway_out=logtostderr=true:. \
+		-I ../tes/tesproto \
+		--go_out=. \
+		--go_opt paths=source_relative \
+		--go_opt=Mtes.proto=github.com/ohsu-comp-bio/funnel/tes/tesproto \
+		--go-grpc_out ./ \
 		events.proto
 
 openapi:

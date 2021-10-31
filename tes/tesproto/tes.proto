@@ -1,6 +1,7 @@
 syntax = "proto3";
+option go_package="github.com/ohsu-comp-bio/funnel/tes/tesproto";
 
-package tes;
+package tesproto;
 
 // Import HTTP RESTful annotations.
 import "google/api/annotations.proto";
@@ -116,7 +117,7 @@ message Input {
 
   // OPTIONAL
   //
-  // File content literal. 
+  // File content literal.
   // Implementations should support a minimum of 128 KiB in this field and may define its own maximum.
   // UTF-8 encoded
   //
@@ -262,7 +263,7 @@ message TaskLog {
   // Information about all output files. Directory outputs are
   // flattened into separate items.
   repeated OutputFileLog outputs = 5;
-  
+
   // OPTIONAL
   //
   // System logs are any logs the system decides are relevant,
@@ -452,7 +453,7 @@ message ListTasksRequest {
   State state = 6;
 
   // OPTIONAL
-  // 
+  //
   // Filter tasks based on the Task.tags field.
   // A tag filter matches a Task tag if both the key and value are exact matches.
   //
@@ -540,7 +541,7 @@ message ServiceInfo {
   // Lists some, but not necessarily all, storage locations supported by the service.
   //
   // Must be in a valid URL format.
-  // e.g. 
+  // e.g.
   // file:///path/to/local/funnel-storage
   // s3://ohsu-compbio-funnel/storage
   // etc.
@@ -554,7 +555,7 @@ message ServiceInfo {
 service TaskService {
 
   // GetServiceInfo provides information about the service,
-  // such as storage details, resource availability, and 
+  // such as storage details, resource availability, and
   // other documentation.
   rpc GetServiceInfo(ServiceInfoRequest) returns (ServiceInfo) {
     option (google.api.http) = {

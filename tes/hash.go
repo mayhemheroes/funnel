@@ -47,7 +47,7 @@ func Hash(task *Task) (string, error) {
 		}
 	}
 
-	if task.Resources != nil {
+	//if task.Resources != nil {
 		r := task.Resources
 		write(r.CpuCores)
 		write(r.Preemptible)
@@ -56,7 +56,7 @@ func Hash(task *Task) (string, error) {
 		for _, zone := range r.Zones {
 			write(zone)
 		}
-	}
+	//}
 
 	for _, vol := range task.Volumes {
 		write(vol)

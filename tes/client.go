@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
+	"encoding/json"
 	"github.com/ohsu-comp-bio/funnel/util"
 	"golang.org/x/net/context"
 )
@@ -40,7 +40,7 @@ func NewClient(address string) (*Client, error) {
 		client: &http.Client{
 			Timeout: 60 * time.Second,
 		},
-		Marshaler: &Marshaler,
+		//Marshaler: &Marshaler,
 		User:      user,
 		Password:  password,
 	}, nil
@@ -50,7 +50,7 @@ func NewClient(address string) (*Client, error) {
 type Client struct {
 	address   string
 	client    *http.Client
-	Marshaler *jsonpb.Marshaler
+	//Marshaler *jsonpb.Marshaler
 	User      string
 	Password  string
 }
@@ -58,7 +58,7 @@ type Client struct {
 // GetTask returns the raw bytes from GET /v1/tasks/{id}
 func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*Task, error) {
 	// Send request
-	u := c.address + "/v1/tasks/" + req.Id + "?view=" + req.View.String()
+	u := c.address + "/v1/tasks/" + req.Id + "?view=" + string(req.View)
 	hreq, _ := http.NewRequest("GET", u, nil)
 	hreq.WithContext(ctx)
 	hreq.SetBasicAuth(c.User, c.Password)
@@ -68,7 +68,7 @@ func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*Task, error
 	}
 	// Parse response
 	resp := &Task{}
-	err = jsonpb.UnmarshalString(string(body), resp)
+	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -79,17 +79,17 @@ func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*Task, error
 func (c *Client) ListTasks(ctx context.Context, req *ListTasksRequest) (*ListTasksResponse, error) {
 	// Build url query parameters
 	v := url.Values{}
-	addUInt32(v, "page_size", req.GetPageSize())
-	addString(v, "page_token", req.GetPageToken())
-	addString(v, "view", req.GetView().String())
+	addInt64(v, "page_size", req.PageSize)
+	addString(v, "page_token", req.PageToken)
+	addString(v, "view", string(req.View))
 
-	if req.GetState() != Unknown {
-		addString(v, "state", req.State.String())
-	}
+	//if req.State != Unknown {
+	//	addString(v, "state", req.State.String())
+	//}
 
-	for key, val := range req.Tags {
-		v.Add(fmt.Sprintf("tags[%s]", key), val)
-	}
+	//for key, val := range req.Tags {
+	//	v.Add(fmt.Sprintf("tags[%s]", key), val)
+	//}
 
 	// Send request
 	u := c.address + "/v1/tasks?" + v.Encode()
@@ -102,7 +102,7 @@ func (c *Client) ListTasks(ctx context.Context, req *ListTasksRequest) (*ListTas
 	}
 	// Parse response
 	resp := &ListTasksResponse{}
-	err = jsonpb.UnmarshalString(string(body), resp)
+	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -116,15 +116,14 @@ func (c *Client) CreateTask(ctx context.Context, task *Task) (*CreateTaskRespons
 		return nil, fmt.Errorf("invalid task message: %v", verr)
 	}
 
-	var b bytes.Buffer
-	err := Marshaler.Marshal(&b, task)
+	b, err := json.Marshal(task)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling task message: %v", err)
 	}
 
 	// Send request
 	u := c.address + "/v1/tasks"
-	hreq, _ := http.NewRequest("POST", u, &b)
+	hreq, _ := http.NewRequest("POST", u, bytes.NewReader(b))
 	hreq.WithContext(ctx)
 	hreq.Header.Add("Content-Type", "application/json")
 	hreq.SetBasicAuth(c.User, c.Password)
@@ -135,7 +134,7 @@ func (c *Client) CreateTask(ctx context.Context, task *Task) (*CreateTaskRespons
 
 	// Parse response
 	resp := &CreateTaskResponse{}
-	err = jsonpb.UnmarshalString(string(body), resp)
+	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +155,7 @@ func (c *Client) CancelTask(ctx context.Context, req *CancelTaskRequest) (*Cance
 
 	// Parse response
 	resp := &CancelTaskResponse{}
-	err = jsonpb.UnmarshalString(string(body), resp)
+	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +175,7 @@ func (c *Client) GetServiceInfo(ctx context.Context, req *ServiceInfoRequest) (*
 
 	// Parse response
 	resp := &ServiceInfo{}
-	err = jsonpb.UnmarshalString(string(body), resp)
+	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +199,7 @@ func (c *Client) WaitForTask(ctx context.Context, taskIDs ...string) error {
 			case State_COMPLETE:
 				done = true
 			case State_EXECUTOR_ERROR, State_SYSTEM_ERROR, State_CANCELED:
-				errMsg := fmt.Sprintf("Task %s exited with state %s", id, r.State.String())
+				errMsg := fmt.Sprintf("Task %s exited with state %s", id, r.State)
 				return errors.New(errMsg)
 			default:
 				done = false

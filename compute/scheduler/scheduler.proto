@@ -1,4 +1,5 @@
 syntax = "proto3";
+option go_package="github.com/ohsu-comp-bio/funnel/compute/scheduler";
 
 package scheduler;
 

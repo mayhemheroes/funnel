@@ -1,8 +1,8 @@
 package tes
 
 import (
-	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -22,16 +22,20 @@ func MarshalToString(t *Task) (string, error) {
 	if t == nil {
 		return "", fmt.Errorf("can't marshal nil task")
 	}
-	return Marshaler.MarshalToString(t)
+	b, err := json.Marshal(t)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 // Base64Encode encodes a task as a base64 encoded string
 func Base64Encode(t *Task) (string, error) {
-	str, err := Marshaler.MarshalToString(t)
+	b, err := json.Marshal(t)
 	if err != nil {
 		return "", err
 	}
-	str = base64.StdEncoding.EncodeToString([]byte(str))
+	str := base64.StdEncoding.EncodeToString(b)
 	return str, nil
 }
 
@@ -42,8 +46,7 @@ func Base64Decode(raw string) (*Task, error) {
 		return nil, fmt.Errorf("decoding task: %v", err)
 	}
 	task := &Task{}
-	buf := bytes.NewBuffer(data)
-	err = jsonpb.Unmarshal(buf, task)
+	err = json.Unmarshal(data, task)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshaling task: %v", err)
 	}
@@ -81,8 +84,8 @@ func InitTask(task *Task, overwrite bool) error {
 	if overwrite || task.Id == "" {
 		task.Id = GenerateID()
 	}
-	if overwrite || task.State == Unknown {
-		task.State = Queued
+	if overwrite || task.State == State_UNKNOWN {
+		task.State = State_QUEUED
 	}
 	if overwrite || task.CreationTime == "" {
 		task.CreationTime = time.Now().Format(time.RFC3339Nano)
@@ -105,7 +108,7 @@ func TerminalState(s State) bool {
 }
 
 // GetBasicView returns the basic view of a task.
-func (task *Task) GetBasicView() *Task {
+func GetBasicView(task *Task) *Task {
 	view := &Task{}
 	deepcopy.Copy(view, task)
 
@@ -126,7 +129,7 @@ func (task *Task) GetBasicView() *Task {
 }
 
 // GetMinimalView returns the minimal view of a task.
-func (task *Task) GetMinimalView() *Task {
+func GetMinimalView(task *Task) *Task {
 	id := task.Id
 	state := task.State
 	return &Task{
@@ -137,11 +140,11 @@ func (task *Task) GetMinimalView() *Task {
 
 // GetTaskLog gets the task log entry at the given index "i".
 // If the entry doesn't exist, empty logs will be appended up to "i".
-func (task *Task) GetTaskLog(i int) *TaskLog {
+func GetTaskLog(task *Task, i int) TaskLog {
 
 	// Grow slice length if necessary
 	for j := len(task.Logs); j <= i; j++ {
-		task.Logs = append(task.Logs, &TaskLog{})
+		task.Logs = append(task.Logs, TaskLog{})
 	}
 
 	return task.Logs[i]
@@ -149,12 +152,12 @@ func (task *Task) GetTaskLog(i int) *TaskLog {
 
 // GetExecLog gets the executor log entry at the given index "i".
 // If the entry doesn't exist, empty logs will be appended up to "i".
-func (task *Task) GetExecLog(attempt int, i int) *ExecutorLog {
-	tl := task.GetTaskLog(attempt)
+func GetExecLog(task *Task, attempt int, i int) ExecutorLog {
+	tl := task.Logs[attempt]
 
 	// Grow slice length if necessary
 	for j := len(tl.Logs); j <= i; j++ {
-		tl.Logs = append(tl.Logs, &ExecutorLog{})
+		tl.Logs = append(tl.Logs, ExecutorLog{})
 	}
 
 	return tl.Logs[i]

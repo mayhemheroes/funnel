@@ -1,16 +1,16 @@
 syntax = "proto3";
+option go_package="github.com/ohsu-comp-bio/funnel/events";
 
 package events;
 
 import "tes.proto";
-import "google/api/annotations.proto";
 
 message Metadata {
   map<string, string> value = 1;
 }
 
 message Outputs {
-  repeated tes.OutputFileLog value = 1;
+  repeated tesproto.OutputFileLog value = 1;
 }
 
 message SystemLog {
@@ -22,7 +22,7 @@ message SystemLog {
 enum Type {
   UNKNOWN = 0;
   TASK_STATE = 1;
-  TASK_START_TIME = 2; 
+  TASK_START_TIME = 2;
   TASK_END_TIME = 3;
   TASK_OUTPUTS = 4;
   TASK_METADATA = 5;
@@ -39,7 +39,7 @@ message Event {
   string id = 1;
   string timestamp = 2;
   oneof data {
-    tes.State state = 3;
+    tesproto.State state = 3;
     string start_time = 4;
     string end_time = 5;
     Outputs outputs = 6;
@@ -48,7 +48,7 @@ message Event {
     string stdout = 13;
     string stderr = 14;
     SystemLog system_log = 15;
-    tes.Task task = 19;
+    tesproto.Task task = 19;
   }
   uint32 attempt = 16;
   uint32 index = 17;

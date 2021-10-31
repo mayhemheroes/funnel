@@ -31,7 +31,7 @@ require (
 	github.com/go-ini/ini v1.52.0 // indirect
 	github.com/go-test/deep v1.0.5
 	github.com/golang/gddo v0.0.0-20200219175727-df439dd5819e
-	github.com/golang/protobuf v1.3.3
+	github.com/golang/protobuf v1.5.0
 	github.com/golangci/golangci-lint v1.22.2 // indirect
 	github.com/google/go-github v17.0.0+incompatible // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
@@ -69,6 +69,7 @@ require (
 	google.golang.org/api v0.17.0
 	google.golang.org/genproto v0.0.0-20200218151345-dad8c97a84f5
 	google.golang.org/grpc v1.27.1
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/olivere/elastic.v5 v5.0.84
 	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.17.3
