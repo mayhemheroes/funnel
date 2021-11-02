@@ -37,7 +37,7 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 		}
 		err = taskBolt.db.Update(func(tx *bolt.Tx) error {
 			tx.Bucket(TaskBucket).Put(idBytes, taskString)
-			tx.Bucket(TaskState).Put(idBytes, []byte(tes.State_QUEUED.String()))
+			tx.Bucket(TaskState).Put(idBytes, []byte(tes.State_QUEUED))
 			return nil
 		})
 		if err != nil {
@@ -167,7 +167,7 @@ func transitionTaskState(tx *bolt.Tx, id string, target tes.State) error {
 
 	case tes.TerminalState(current) && !tes.TerminalState(target):
 		// Error when trying to switch out of a terminal state to a non-terminal one.
-		return fmt.Errorf("Unexpected transition from %s to %s", current.String(), target.String())
+		return fmt.Errorf("Unexpected transition from %s to %s", current, target)
 
 	case target == Queued:
 		return fmt.Errorf("Can't transition to Queued state")
@@ -175,7 +175,7 @@ func transitionTaskState(tx *bolt.Tx, id string, target tes.State) error {
 
 	switch target {
 	case Unknown, Paused:
-		return fmt.Errorf("Unimplemented task state %s", target.String())
+		return fmt.Errorf("Unimplemented task state %s", target)
 
 	case Canceled, Complete, ExecutorError, SystemError:
 		// Remove from queue
@@ -183,15 +183,15 @@ func transitionTaskState(tx *bolt.Tx, id string, target tes.State) error {
 
 	case Running, Initializing:
 		if current != Unknown && current != Queued && current != Initializing {
-			return fmt.Errorf("Unexpected transition from %s to %s", current.String(), target.String())
+			return fmt.Errorf("Unexpected transition from %s to %s", current, target)
 		}
 		tx.Bucket(TasksQueued).Delete(idBytes)
 
 	default:
-		return fmt.Errorf("Unknown target state: %s", target.String())
+		return fmt.Errorf("Unknown target state: %s", target)
 	}
 
-	tx.Bucket(TaskState).Put(idBytes, []byte(target.String()))
+	tx.Bucket(TaskState).Put(idBytes, []byte(target))
 	return nil
 }
 

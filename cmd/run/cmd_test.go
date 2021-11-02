@@ -14,11 +14,11 @@ func TestParse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := []*tes.Task{
+	expected := []tes.Task{
 		{
 			Name:        "myname",
 			Description: "mydesc",
-			Inputs: []*tes.Input{
+			Inputs: []tes.Input{
 				{
 					Name: "f1",
 					Url:  "file://" + cwd + "/testdata/f1.txt",
@@ -41,7 +41,7 @@ func TestParse(t *testing.T) {
 					Content: "test content\n",
 				},
 			},
-			Outputs: []*tes.Output{
+			Outputs: []tes.Output{
 				{
 					Name: "stdout-0",
 					Url:  "file://" + cwd + "/testdata/stdout-first",
@@ -69,14 +69,14 @@ func TestParse(t *testing.T) {
 					Type: tes.FileType_DIRECTORY,
 				},
 			},
-			Resources: &tes.Resources{
+			Resources: tes.Resources{
 				CpuCores:    8,
 				Preemptible: true,
 				RamGb:       32.0,
 				DiskGb:      100.0,
 				Zones:       []string{"zone1", "zone2"},
 			},
-			Executors: []*tes.Executor{
+			Executors: []tes.Executor{
 				{
 					Image:   "busybox",
 					Command: []string{"sh", "-c", "echo hello"},
@@ -156,7 +156,7 @@ func TestParse(t *testing.T) {
 	}
 
 	if diff := deep.Equal(result, expected); diff != nil {
-		s, _ := tes.MarshalToString(expected[0])
+		s, _ := tes.MarshalToString(&expected[0])
 		t.Log("Expected", s)
 		q, _ := tes.MarshalToString(result[0])
 		t.Log("Actual", q)

@@ -77,17 +77,17 @@ func (db *Badger) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*te
 			}
 
 			// Filter tasks by tag.
-			for k, v := range req.Tags {
-				tval, ok := task.Tags[k]
-				if !ok || tval != v {
-					continue taskLoop
-				}
-			}
+			//for k, v := range req.Tags {
+			//	tval, ok := task.Tags[k]
+			//	if !ok || tval != v {
+			//		continue taskLoop
+			//	}
+			//}
 
 			// Filter tasks by state.
-			if req.State != tes.Unknown && req.State != task.State {
-				continue taskLoop
-			}
+			//if req.State != tes.State_UNKNOWN && req.State != task.State {
+			//	continue taskLoop
+			//}
 
 			switch req.View {
 			case tes.Minimal:

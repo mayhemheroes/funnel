@@ -204,7 +204,7 @@ func TestZeroLogRate(t *testing.T) {
 	conf.Worker.LogTailSize = 1000
 	task := tes.Task{
 		Id: "test-task-" + tes.GenerateID(),
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image:   "alpine",
 				Command: []string{"dd", "if=/dev/urandom", "bs=5000000", "count=5"},
@@ -243,7 +243,7 @@ func TestZeroLogTailSize(t *testing.T) {
 	conf.Worker.LogTailSize = 0
 	task := tes.Task{
 		Id: "test-task-" + tes.GenerateID(),
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image:   "alpine",
 				Command: []string{"dd", "if=/dev/urandom", "bs=5000000", "count=100"},
@@ -280,7 +280,7 @@ func TestLogTailContent(t *testing.T) {
 	conf.Worker.LogTailSize = 10
 	task := tes.Task{
 		Id: "test-task-" + tes.GenerateID(),
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image:   "alpine",
 				Command: []string{"sh", "-c", "for i in $(seq 0 10); do echo ${i}abc && sleep 0.1; done | tee /dev/stderr"},
@@ -324,7 +324,7 @@ func TestDockerContainerMetadata(t *testing.T) {
 	conf.Worker.LogTailSize = 10
 	task := tes.Task{
 		Id: "test-task-" + tes.GenerateID(),
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image:   "alpine",
 				Command: []string{"sleep", "5"},

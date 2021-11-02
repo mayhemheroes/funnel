@@ -77,10 +77,10 @@ func mapStates(ids []string) ([]*compute.HPCTaskState, error) {
 		if state == "PENDING" {
 			if reason == "PartitionConfig" {
 				output = append(output, &compute.HPCTaskState{
-					ID: id, TESState: tes.SystemError, State: state, Reason: "No suitable partition available", Remove: true,
+					ID: id, TESState: tes.State_SYSTEM_ERROR, State: state, Reason: "No suitable partition available", Remove: true,
 				})
 			} else {
-				output = append(output, &compute.HPCTaskState{ID: id, TESState: tes.Queued, State: state})
+				output = append(output, &compute.HPCTaskState{ID: id, TESState: tes.State_QUEUED, State: state})
 			}
 		} else {
 			output = append(output, &compute.HPCTaskState{ID: id, TESState: squeueStateMap[state], State: state})
@@ -109,36 +109,36 @@ func mapStates(ids []string) ([]*compute.HPCTaskState, error) {
 // sacct states
 // https://slurm.schedmd.com/sacct.html
 var sacctStateMap = map[string]tes.State{
-	"PENDING":     tes.Queued,
-	"CONFIGURING": tes.Queued,
-	"RUNNING":     tes.Running,
-	"RESIZING":    tes.Running,
-	"COMPLETING":  tes.Running,
-	"SUSPENDED":   tes.Running,
-	"COMPLETED":   tes.Complete,
-	"CANCELLED":   tes.SystemError,
-	"DEADLINE":    tes.SystemError,
-	"FAILED":      tes.SystemError,
-	"NODE_FAIL":   tes.SystemError,
-	"PREEMPTED":   tes.SystemError,
-	"TIMEOUT":     tes.SystemError,
+	"PENDING":     tes.State_QUEUED,
+	"CONFIGURING": tes.State_QUEUED,
+	"RUNNING":     tes.State_RUNNING,
+	"RESIZING":    tes.State_RUNNING,
+	"COMPLETING":  tes.State_RUNNING,
+	"SUSPENDED":   tes.State_RUNNING,
+	"COMPLETED":   tes.State_COMPLETE,
+	"CANCELLED":   tes.State_SYSTEM_ERROR,
+	"DEADLINE":    tes.State_SYSTEM_ERROR,
+	"FAILED":      tes.State_SYSTEM_ERROR,
+	"NODE_FAIL":   tes.State_SYSTEM_ERROR,
+	"PREEMPTED":   tes.State_SYSTEM_ERROR,
+	"TIMEOUT":     tes.State_SYSTEM_ERROR,
 }
 
 // squeue states
 // https://slurm.schedmd.com/squeue.html
 var squeueStateMap = map[string]tes.State{
-	"PENDING":      tes.Queued,
-	"CONFIGURING":  tes.Queued,
-	"RUNNING":      tes.Running,
-	"COMPLETING":   tes.Running,
-	"SUSPENDED":    tes.Running,
-	"COMPLETED":    tes.Complete,
-	"CANCELLED":    tes.SystemError,
-	"STOPPED":      tes.SystemError,
-	"FAILED":       tes.SystemError,
-	"TIMEOUT":      tes.SystemError,
-	"PREEMPTED":    tes.SystemError,
-	"NODE_FAIL":    tes.SystemError,
-	"REVOKED":      tes.SystemError,
-	"SPECIAL_EXIT": tes.SystemError,
+	"PENDING":      tes.State_QUEUED,
+	"CONFIGURING":  tes.State_QUEUED,
+	"RUNNING":      tes.State_RUNNING,
+	"COMPLETING":   tes.State_RUNNING,
+	"SUSPENDED":    tes.State_RUNNING,
+	"COMPLETED":    tes.State_COMPLETE,
+	"CANCELLED":    tes.State_SYSTEM_ERROR,
+	"STOPPED":      tes.State_SYSTEM_ERROR,
+	"FAILED":       tes.State_SYSTEM_ERROR,
+	"TIMEOUT":      tes.State_SYSTEM_ERROR,
+	"PREEMPTED":    tes.State_SYSTEM_ERROR,
+	"NODE_FAIL":    tes.State_SYSTEM_ERROR,
+	"REVOKED":      tes.State_SYSTEM_ERROR,
+	"SPECIAL_EXIT": tes.State_SYSTEM_ERROR,
 }

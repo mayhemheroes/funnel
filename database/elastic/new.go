@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/ohsu-comp-bio/funnel/compute/scheduler"
 	"github.com/ohsu-comp-bio/funnel/config"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
@@ -14,6 +15,7 @@ var basic = elastic.NewFetchSourceContext(true).
 
 // Elastic provides an elasticsearch database server backend.
 type Elastic struct {
+	scheduler.UnimplementedSchedulerServiceServer
 	client    *elastic.Client
 	conf      config.Elastic
 	taskIndex string

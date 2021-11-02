@@ -24,7 +24,7 @@ func NewTaskInfo(t *tes.Task) *TaskInfo {
 
 	i := &TaskInfo{p, make(map[string]string)}
 	i.Set("id", t.Id)
-	i.Set("state", t.State.String())
+	i.Set("state", string(t.State))
 	i.Set("name", t.Name)
 	i.Set("description", t.Description)
 	var tags []string

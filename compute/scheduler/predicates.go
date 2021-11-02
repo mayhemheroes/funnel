@@ -11,10 +11,10 @@ type Predicate func(*tes.Task, *Node) error
 
 // ResourcesFit determines whether a task fits a node's resources.
 func ResourcesFit(t *tes.Task, n *Node) error {
-	req := t.GetResources()
+	req := t.Resources //.GetResources()
 
 	switch {
-	case n.GetPreemptible() && !req.GetPreemptible():
+	case n.GetPreemptible() && !req.Preemptible:
 		return fmt.Errorf("Fail preemptible")
 	case n.GetAvailable().GetCpus() <= 0:
 		return fmt.Errorf("Fail zero cpus available")
@@ -22,22 +22,22 @@ func ResourcesFit(t *tes.Task, n *Node) error {
 		return fmt.Errorf("Fail zero ram available")
 	case n.GetAvailable().GetDiskGb() <= 0.0:
 		return fmt.Errorf("Fail zero disk available")
-	case n.GetAvailable().GetCpus() < req.GetCpuCores():
+	case n.GetAvailable().GetCpus() < uint32(req.CpuCores):
 		return fmt.Errorf(
 			"Fail cpus, requested %d, available %d",
-			req.GetCpuCores(),
+			req.CpuCores,
 			n.GetAvailable().GetCpus(),
 		)
-	case n.GetAvailable().GetRamGb() < req.GetRamGb():
+	case n.GetAvailable().GetRamGb() < req.RamGb:
 		return fmt.Errorf(
 			"Fail ram, requested %f, available %f",
-			req.GetRamGb(),
+			req.RamGb,
 			n.GetAvailable().GetRamGb(),
 		)
-	case n.GetAvailable().GetDiskGb() < req.GetDiskGb():
+	case n.GetAvailable().GetDiskGb() < req.DiskGb:
 		return fmt.Errorf(
 			"Fail disk, requested %f, available %f",
-			req.GetDiskGb(),
+			req.DiskGb,
 			n.GetAvailable().GetDiskGb(),
 		)
 	}
@@ -51,12 +51,12 @@ func ZonesFit(t *tes.Task, n *Node) error {
 		return nil
 	}
 
-	if len(t.GetResources().GetZones()) == 0 {
+	if len(t.Resources.Zones) == 0 {
 		// Request doesn't specify any zones, so don't bother checking.
 		return nil
 	}
 
-	for _, z := range t.GetResources().GetZones() {
+	for _, z := range t.Resources.Zones {
 		if z == n.Zone {
 			return nil
 		}

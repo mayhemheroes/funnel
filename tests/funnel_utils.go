@@ -445,7 +445,7 @@ func (f *Funnel) CleanupTestServerContainer(containerName string) {
 func HelloWorld() *tes.Task {
 	return &tes.Task{
 		Id: tes.GenerateID(),
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image:   "alpine",
 				Command: []string{"echo", "hello world"},

@@ -17,7 +17,7 @@ type TesTaskSource interface {
 
 type TaskSource struct {
 	client   *tes.Client
-	pageSize uint32
+	pageSize int64
 	pPage    []string
 	cPage    string
 	nPage    string
@@ -25,7 +25,7 @@ type TaskSource struct {
 	lock     sync.RWMutex
 }
 
-func NewTaskSource(tesHTTPServerAddress string, pageSize uint32) (*TaskSource, error) {
+func NewTaskSource(tesHTTPServerAddress string, pageSize int64) (*TaskSource, error) {
 	// init funnel http client
 	cli, err := tes.NewClient(tesHTTPServerAddress)
 	if err != nil {
@@ -71,7 +71,7 @@ func (ts *TaskSource) listTasks(previous, next bool) (TaskWidgets, error) {
 	ts.nPage = resp.NextPageToken
 
 	for _, t := range resp.Tasks {
-		tasks = append(tasks, NewTaskWidget(t))
+		tasks = append(tasks, NewTaskWidget(&t))
 	}
 
 	return tasks, nil

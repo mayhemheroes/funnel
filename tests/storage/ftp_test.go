@@ -59,7 +59,7 @@ func TestFTPStorage(t *testing.T) {
 
 	task := &tes.Task{
 		Name: "storage e2e",
-		Inputs: []*tes.Input{
+		Inputs: []tes.Input{
 			{
 				Url:  inFileURL,
 				Path: "/opt/inputs/test-file.txt",
@@ -71,7 +71,7 @@ func TestFTPStorage(t *testing.T) {
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Outputs: []*tes.Output{
+		Outputs: []tes.Output{
 			{
 				Path: "/opt/workdir/test-output-file.txt",
 				Url:  outFileURL,
@@ -83,7 +83,7 @@ func TestFTPStorage(t *testing.T) {
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{
@@ -151,21 +151,21 @@ func TestFTPStorage(t *testing.T) {
 	// does not exist
 	task = &tes.Task{
 		Name: "storage e2e",
-		Inputs: []*tes.Input{
+		Inputs: []tes.Input{
 			{
 				Url:  protocol + testBucket + "/this/path/does/not/exist",
 				Path: "/opt/inputs/test-directory",
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Outputs: []*tes.Output{
+		Outputs: []tes.Output{
 			{
 				Path: "/opt/workdir/this/path/does/not/exist/test-output-directory",
 				Url:  outDirURL,
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{
@@ -249,7 +249,7 @@ func TestFTPStorageConfigAuth(t *testing.T) {
 
 	task := &tes.Task{
 		Name: "storage e2e",
-		Inputs: []*tes.Input{
+		Inputs: []tes.Input{
 			{
 				Url:  inFileURL,
 				Path: "/opt/inputs/test-file.txt",
@@ -261,7 +261,7 @@ func TestFTPStorageConfigAuth(t *testing.T) {
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Outputs: []*tes.Output{
+		Outputs: []tes.Output{
 			{
 				Path: "/opt/workdir/test-output-file.txt",
 				Url:  outFileURL,
@@ -273,7 +273,7 @@ func TestFTPStorageConfigAuth(t *testing.T) {
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{
@@ -341,21 +341,21 @@ func TestFTPStorageConfigAuth(t *testing.T) {
 	// does not exist
 	task = &tes.Task{
 		Name: "storage e2e",
-		Inputs: []*tes.Input{
+		Inputs: []tes.Input{
 			{
 				Url:  protocol + testBucket + "/this/path/does/not/exist",
 				Path: "/opt/inputs/test-directory",
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Outputs: []*tes.Output{
+		Outputs: []tes.Output{
 			{
 				Path: "/opt/workdir/this/path/does/not/exist/test-output-directory",
 				Url:  outDirURL,
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{

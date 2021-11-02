@@ -81,7 +81,7 @@ func TestMultiS3Storage(t *testing.T) {
 	outFileURL := protocol + gconf1.Endpoint + "/" + testBucket + "/" + "test-output-file.txt"
 	task := &tes.Task{
 		Name: "s3 e2e",
-		Inputs: []*tes.Input{
+		Inputs: []tes.Input{
 			{
 				Url:  g1FileURL,
 				Path: "/opt/inputs/test-file1.txt",
@@ -93,14 +93,14 @@ func TestMultiS3Storage(t *testing.T) {
 				Type: tes.FileType_FILE,
 			},
 		},
-		Outputs: []*tes.Output{
+		Outputs: []tes.Output{
 			{
 				Path: "/opt/workdir/test-output-file.txt",
 				Url:  outFileURL,
 				Type: tes.FileType_FILE,
 			},
 		},
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{
@@ -150,7 +150,7 @@ func TestMultiS3Storage(t *testing.T) {
 	g2FileURL = strings.Replace(g2FileURL, gconf2.Endpoint, "", -1)
 	task = &tes.Task{
 		Name: "s3 e2e",
-		Inputs: []*tes.Input{
+		Inputs: []tes.Input{
 			{
 				Url:  g1FileURL,
 				Path: "/opt/inputs/test-file1.txt",
@@ -162,14 +162,14 @@ func TestMultiS3Storage(t *testing.T) {
 				Type: tes.FileType_FILE,
 			},
 		},
-		Outputs: []*tes.Output{
+		Outputs: []tes.Output{
 			{
 				Path: "/opt/workdir/test-output-file.txt",
 				Url:  outFileURL,
 				Type: tes.FileType_FILE,
 			},
 		},
-		Executors: []*tes.Executor{
+		Executors: []tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{

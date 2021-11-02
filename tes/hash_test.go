@@ -11,7 +11,7 @@ func TestHash(t *testing.T) {
 	}{
 		{
 			&Task{
-				Executors: []*Executor{
+				Executors: []Executor{
 					{
 						Command: []string{"one", "two"},
 					},

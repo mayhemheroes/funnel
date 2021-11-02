@@ -55,7 +55,7 @@ func (b *Backend) WriteEvent(ctx context.Context, ev *events.Event) error {
 		return b.Submit(ev.GetTask())
 
 	case events.Type_TASK_STATE:
-		if ev.GetState() == tes.State_CANCELED {
+		if ev.State == tes.State_CANCELED {
 			return b.Cancel(ctx, ev.Id)
 		}
 	}
@@ -99,7 +99,7 @@ func (b *Backend) Submit(task *tes.Task) error {
 
 	resp, err := b.client.SubmitJob(req)
 	if err != nil {
-		b.event.WriteEvent(ctx, events.NewState(task.Id, tes.SystemError))
+		b.event.WriteEvent(ctx, events.NewState(task.Id, tes.State_SYSTEM_ERROR))
 		b.event.WriteEvent(
 			ctx,
 			events.NewSystemLog(
@@ -168,7 +168,7 @@ ReconcileLoop:
 
 		case <-ticker.C:
 			pageToken := ""
-			states := []tes.State{tes.Queued, tes.Initializing, tes.Running}
+			states := []tes.State{tes.State_QUEUED, tes.State_INITIALIZING, tes.State_RUNNING}
 			for _, s := range states {
 				for {
 					lresp, err := b.database.ListTasks(ctx, &tes.ListTasksRequest{

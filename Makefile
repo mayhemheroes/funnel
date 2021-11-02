@@ -37,24 +37,24 @@ build:
 
 # Generate the protobuf/gRPC code
 proto:
-	@cd tes/tesproto && protoc \
+	@cd tes/proto && protoc \
 		$(PROTO_INC) \
 		--go_out=. \
-  	--go_opt paths=source_relative \
-		tes.proto
+	  	--go_opt paths=source_relative \
+		models/*.proto
 	@cd compute/scheduler && protoc \
 		$(PROTO_INC) \
 		--go_out=. \
 		--go_opt paths=source_relative \
 		--go-grpc_out ./ \
-    --go-grpc_opt paths=source_relative \
+	    --go-grpc_opt paths=source_relative \
 		scheduler.proto
 	@cd events && protoc \
 		$(PROTO_INC) \
-		-I ../tes/tesproto \
+		-I ../tes/proto \
 		--go_out=. \
 		--go_opt paths=source_relative \
-		--go_opt=Mtes.proto=github.com/ohsu-comp-bio/funnel/tes/tesproto \
+		--go_opt=Mtes.proto=github.com/ohsu-comp-bio/funnel/tes/proto \
 		--go-grpc_out ./ \
 		events.proto
 
@@ -64,9 +64,15 @@ openapi:
 		-i tes/task-execution-schemas/openapi/task_execution_service.openapi.yaml \
 		-g go-server -o tmp --additional-properties sourceFolder=openapi
 	@mv tmp/openapi tes/
+	@rm -rf tes/proto/models
+	@java -jar openapi-generator-cli.jar generate \
+		-i tes/task-execution-schemas/openapi/task_execution_service.openapi.yaml \
+		-g protobuf-schema -o tmp --package-name models --additional-properties sourceFolder=openapi
+	@sed -i 's/^package/option go_package = "github.com\/ohsu-comp-bio\/funnel\/tes\/proto\/models";\npackage/' tmp/models/*.proto
+	@mv tmp/models tes/proto/
 
 openapi-depends:
-	@curl -O https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/5.2.1/openapi-generator-cli-5.2.1.jar
+	@curl -o openapi-generator-cli.jar https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/5.3.0/openapi-generator-cli-5.3.0.jar
 
 
 # Start API reference doc server

@@ -92,10 +92,10 @@ func mapStates(ids []string) ([]*compute.HPCTaskState, error) {
 		switch state {
 		case "Complete":
 			if j.ExitStatus == 0 {
-				output = append(output, &compute.HPCTaskState{ID: j.JobID, TESState: tes.Complete, State: state})
+				output = append(output, &compute.HPCTaskState{ID: j.JobID, TESState: tes.State_COMPLETE, State: state})
 			} else {
 				output = append(output, &compute.HPCTaskState{
-					ID: j.JobID, TESState: tes.SystemError, State: state, Reason: "Funnel worker exited with non-zero status",
+					ID: j.JobID, TESState: tes.State_SYSTEM_ERROR, State: state, Reason: "Funnel worker exited with non-zero status",
 				})
 			}
 
@@ -118,12 +118,12 @@ var stateMap = map[string]string{
 }
 
 var pbsToTES = map[string]tes.State{
-	"Queued":    tes.Queued,
-	"Running":   tes.Running,
-	"Exiting":   tes.Running,
-	"Held":      tes.Running,
-	"Suspended": tes.Running,
-	"Moving":    tes.Running,
-	"Waiting":   tes.Running, // maybe should refer to Queued?
-	"Complete":  tes.Complete,
+	"Queued":    tes.State_QUEUED,
+	"Running":   tes.State_RUNNING,
+	"Exiting":   tes.State_RUNNING,
+	"Held":      tes.State_RUNNING,
+	"Suspended": tes.State_RUNNING,
+	"Moving":    tes.State_RUNNING,
+	"Waiting":   tes.State_RUNNING, // maybe should refer to Queued?
+	"Complete":  tes.State_COMPLETE,
 }

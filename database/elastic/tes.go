@@ -2,7 +2,6 @@ package elastic
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/ohsu-comp-bio/funnel/tes"
@@ -54,13 +53,13 @@ func (es *Elastic) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*t
 	}
 
 	filterParts := []elastic.Query{}
-	if req.State != tes.Unknown {
-		filterParts = append(filterParts, elastic.NewTermQuery("state", req.State.String()))
-	}
+	//if req.State != tes.State_UNKNOWN {
+	//	filterParts = append(filterParts, elastic.NewTermQuery("state", req.State))
+	//}
 
-	for k, v := range req.Tags {
-		filterParts = append(filterParts, elastic.NewMatchQuery(fmt.Sprintf("tags.%s.keyword", k), v))
-	}
+	//for k, v := range req.Tags {
+	//	filterParts = append(filterParts, elastic.NewMatchQuery(fmt.Sprintf("tags.%s.keyword", k), v))
+	//}
 
 	if len(filterParts) > 0 {
 		q = q.Query(elastic.NewBoolQuery().Filter(filterParts...))

@@ -14,7 +14,7 @@ func TestEmptyTagKeyValidation(t *testing.T) {
 		Tags: map[string]string{
 			"": "bar",
 		},
-		Executors: []*Executor{
+		Executors: []Executor{
 			{
 				Image:   "alpine",
 				Command: []string{"echo"},

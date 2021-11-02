@@ -57,8 +57,8 @@ func (r *DefaultWorker) Run(pctx context.Context) (runerr error) {
 	}
 
 	// set up task specific utilities
-	event = events.NewTaskWriter(task.GetId(), 0, r.EventWriter)
-	mapper = NewFileMapper(filepath.Join(r.Conf.WorkDir, task.GetId()))
+	event = events.NewTaskWriter(task.Id, 0, r.EventWriter)
+	mapper = NewFileMapper(filepath.Join(r.Conf.WorkDir, task.Id))
 
 	event.Info("Version", version.LogFields()...)
 	event.State(tes.State_INITIALIZING)

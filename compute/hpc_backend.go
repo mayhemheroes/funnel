@@ -74,7 +74,7 @@ func (b *HPCBackend) Submit(task *tes.Task) error {
 
 	err = cmd.Run()
 	if err != nil {
-		b.Event.WriteEvent(ctx, events.NewState(task.Id, tes.SystemError))
+		b.Event.WriteEvent(ctx, events.NewState(task.Id, tes.State_SYSTEM_ERROR))
 		b.Event.WriteEvent(
 			ctx,
 			events.NewSystemLog(
@@ -148,7 +148,7 @@ ReconcileLoop:
 
 		case <-ticker.C:
 			pageToken := ""
-			states := []tes.State{tes.Queued, tes.Initializing, tes.Running}
+			states := []tes.State{tes.State_QUEUED, tes.State_INITIALIZING, tes.State_RUNNING}
 			for _, s := range states {
 				for {
 					lresp, err := b.Database.ListTasks(ctx, &tes.ListTasksRequest{
@@ -192,8 +192,8 @@ ReconcileLoop:
 							continue
 						}
 
-						if t.TESState == tes.SystemError {
-							b.Event.WriteEvent(ctx, events.NewState(task.Id, tes.SystemError))
+						if t.TESState == tes.State_SYSTEM_ERROR {
+							b.Event.WriteEvent(ctx, events.NewState(task.Id, tes.State_SYSTEM_ERROR))
 							b.Event.WriteEvent(
 								ctx,
 								events.NewSystemLog(

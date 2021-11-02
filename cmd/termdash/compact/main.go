@@ -23,13 +23,13 @@ func NewCompact(t *tes.Task) *Compact {
 	row := &Compact{
 		Status: NewStatus(),
 		ID:     NewTextCol(t.Id),
-		State:  NewTextCol(t.State.String()),
+		State:  NewTextCol(string(t.State)),
 		Name:   NewTextCol(t.Name),
 		Desc:   NewTextCol(t.Description),
 		X:      0,
 		Height: 1,
 	}
-	row.Status.Set(t.State.String())
+	row.Status.Set(string(t.State))
 	return row
 }
 

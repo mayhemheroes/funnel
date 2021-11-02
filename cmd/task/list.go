@@ -25,10 +25,10 @@ func List(server, taskView, pageToken, stateFilter string, tagsFilter []string, 
 
 	output := &tes.ListTasksResponse{}
 
-	state, err := getTaskState(stateFilter)
-	if err != nil {
-		return err
-	}
+	//state, err := getTaskState(stateFilter)
+	//if err != nil {
+	//	return err
+	//}
 
 	tags := make(map[string]string)
 	for _, v := range tagsFilter {
@@ -43,9 +43,9 @@ func List(server, taskView, pageToken, stateFilter string, tagsFilter []string, 
 		req := &tes.ListTasksRequest{
 			View:      tes.TaskView(view),
 			PageToken: pageToken,
-			PageSize:  pageSize,
-			State:     state,
-			Tags:      tags,
+			PageSize:  int64(pageSize),
+			//State:     state,
+			//Tags:      tags,
 		}
 
 		resp, err := cli.ListTasks(context.Background(), req)

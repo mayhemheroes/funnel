@@ -22,7 +22,7 @@ func UpdateNode(ctx context.Context, cli tes.ReadOnlyServer, node, existing *Nod
 			continue
 		}
 		// If the task isn't in a terminal state, leave it assigned to the node.
-		if !tes.TerminalState(task.GetState()) {
+		if !tes.TerminalState(task.State) {
 			tasks = append(tasks, task)
 		}
 	}
@@ -52,19 +52,19 @@ func SubtractResources(t *tes.Task, in *Resources) *Resources {
 		RamGb:  in.GetRamGb(),
 		DiskGb: in.GetDiskGb(),
 	}
-	tres := t.GetResources()
+	tres := t.Resources
 
 	// Cpus are represented by an unsigned int, and if we blindly
 	// subtract it will rollover to a very large number. So check first.
-	rcpus := tres.GetCpuCores()
-	if rcpus >= out.Cpus {
+	rcpus := tres.CpuCores
+	if rcpus >= int64(out.Cpus) {
 		out.Cpus = 0
 	} else {
-		out.Cpus -= rcpus
+		out.Cpus -= uint32(rcpus)
 	}
 
-	out.RamGb -= tres.GetRamGb()
-	out.DiskGb -= tres.GetDiskGb()
+	out.RamGb -= tres.RamGb
+	out.DiskGb -= tres.DiskGb
 
 	// Check minimum values.
 	if out.Cpus < 0 {

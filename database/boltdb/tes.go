@@ -132,7 +132,7 @@ func getTaskView(tx *bolt.Tx, id string, view tes.TaskView) (*tes.Task, error) {
 	case view == tes.TaskView_FULL:
 		err = loadFullTaskView(tx, id, task)
 	default:
-		err = fmt.Errorf("Unknown view: %s", view.String())
+		err = fmt.Errorf("Unknown view: %s", view)
 	}
 	return task, err
 }
@@ -169,7 +169,7 @@ func (taskBolt *BoltDB) ListTasks(ctx context.Context, req *tes.ListTasksRequest
 		for ; k != nil && i < pageSize; k, _ = c.Prev() {
 			task, _ := getTaskView(tx, string(k), view)
 
-			if req.State != tes.Unknown && req.State != task.State {
+			if req.State != tes.State_UNKNOWN && req.State != task.State {
 				continue taskLoop
 			}
 

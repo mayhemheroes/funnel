@@ -180,23 +180,23 @@ func TestNodeCleanup(t *testing.T) {
 
 	t1 := tests.HelloWorld()
 	srv.Server.Tasks.CreateTask(ctx, t1)
-	e.WriteEvent(ctx, events.NewState(t1.Id, tes.Complete))
+	e.WriteEvent(ctx, events.NewState(t1.Id, tes.State_COMPLETE))
 
 	t2 := tests.HelloWorld()
 	srv.Server.Tasks.CreateTask(ctx, t2)
-	e.WriteEvent(ctx, events.NewState(t2.Id, tes.Running))
+	e.WriteEvent(ctx, events.NewState(t2.Id, tes.State_RUNNING))
 
 	t3 := tests.HelloWorld()
 	srv.Server.Tasks.CreateTask(ctx, t3)
-	e.WriteEvent(ctx, events.NewState(t3.Id, tes.SystemError))
+	e.WriteEvent(ctx, events.NewState(t3.Id, tes.State_SYSTEM_ERROR))
 
 	t4 := tests.HelloWorld()
 	srv.Server.Tasks.CreateTask(ctx, t4)
-	e.WriteEvent(ctx, events.NewState(t4.Id, tes.Running))
+	e.WriteEvent(ctx, events.NewState(t4.Id, tes.State_RUNNING))
 
 	t5 := tests.HelloWorld()
 	srv.Server.Tasks.CreateTask(ctx, t5)
-	e.WriteEvent(ctx, events.NewState(t5.Id, tes.Running))
+	e.WriteEvent(ctx, events.NewState(t5.Id, tes.State_RUNNING))
 
 	srv.Scheduler.Nodes.PutNode(ctx, &scheduler.Node{
 		Id:      "test-gone-node-cleanup-restart-1",
@@ -240,11 +240,11 @@ func TestNodeCleanup(t *testing.T) {
 	}
 
 	expected := []tes.State{
-		tes.Running,
-		tes.SystemError,
-		tes.SystemError,
-		tes.SystemError,
-		tes.Complete,
+		tes.State_RUNNING,
+		tes.State_SYSTEM_ERROR,
+		tes.State_SYSTEM_ERROR,
+		tes.State_SYSTEM_ERROR,
+		tes.State_COMPLETE,
 	}
 
 	for i, task := range ts.Tasks {
@@ -353,7 +353,7 @@ func TestNodeDrain(t *testing.T) {
 	// One last check to ensure the second task wasn't scheduled.
 	srv.GetView(first, tes.Minimal)
 
-	if srv.GetView(second, tes.Minimal).State != tes.Queued {
+	if srv.GetView(second, tes.Minimal).State != tes.State_QUEUED {
 		t.Fatal("expected second task to be queued")
 	}
 }

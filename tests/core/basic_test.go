@@ -904,7 +904,7 @@ func TestListTaskFilterState(t *testing.T) {
 
 	r, err = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
 		View:  tes.TaskView_MINIMAL,
-		State: tes.Complete,
+		State: tes.State_COMPLETE,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -918,7 +918,7 @@ func TestListTaskFilterState(t *testing.T) {
 
 	r, err = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
 		View:  tes.TaskView_MINIMAL,
-		State: tes.Canceled,
+		State: tes.State_CANCELED,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1200,7 +1200,7 @@ func TestMetadataEvent(t *testing.T) {
 	}
 
 	task := f.Wait(id)
-	if task.State != tes.Complete {
+	if task.State != tes.State_COMPLETE {
 		t.Error("expected complete state", task)
 	}
 

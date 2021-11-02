@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"cloud.google.com/go/datastore"
+	"github.com/ohsu-comp-bio/funnel/compute/scheduler"
 	"github.com/ohsu-comp-bio/funnel/config"
 	"google.golang.org/api/option"
 )
 
 // Datastore provides a task database on Google Cloud Datastore.
 type Datastore struct {
+	scheduler.UnimplementedSchedulerServiceServer
 	client *datastore.Client
 }
 

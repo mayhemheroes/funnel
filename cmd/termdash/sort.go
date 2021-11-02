@@ -17,10 +17,10 @@ var idSorter = func(c1, c2 *TaskWidget) bool {
 }
 
 var stateSorter = func(c1, c2 *TaskWidget) bool {
-	if c1.Task.State.String() == c2.Task.State.String() {
+	if c1.Task.State == c2.Task.State {
 		return nameSorter(c1, c2)
 	}
-	return c1.Task.State.String() < c2.Task.State.String()
+	return c1.Task.State < c2.Task.State
 }
 
 var nameSorter = func(c1, c2 *TaskWidget) bool {
@@ -65,7 +65,7 @@ func (a TaskWidgets) Filter() {
 		// Apply filter
 		fi := re.FindAllString(t.Task.Id, 1) == nil
 		fn := re.FindAllString(t.Task.Name, 1) == nil
-		fs := re.FindAllString(t.Task.State.String(), 1) == nil
+		fs := re.FindAllString(string(t.Task.State), 1) == nil
 		fd := re.FindAllString(t.Task.Description, 1) == nil
 		if fi && fn && fs && fd {
 			t.display = false
