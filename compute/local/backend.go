@@ -8,7 +8,7 @@ import (
 	"github.com/ohsu-comp-bio/funnel/config"
 	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/logger"
-	"github.com/ohsu-comp-bio/funnel/tes"
+	"github.com/ohsu-comp-bio/funnel/tes/tesproto"
 )
 
 // NewBackend returns a new local Backend instance.
@@ -36,7 +36,7 @@ func (b *Backend) Close() {}
 
 // Submit submits a task. For the Local backend this results in the task
 // running immediately.
-func (b *Backend) Submit(task *tes.Task) error {
+func (b *Backend) Submit(task *tesproto.TesTask) error {
 	ctx := context.Background()
 
 	w, err := workerCmd.NewWorker(ctx, b.conf, b.log, &workerCmd.Options{

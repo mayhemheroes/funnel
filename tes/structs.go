@@ -1,6 +1,9 @@
 package tes
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ohsu-comp-bio/funnel/tes/openapi"
 )
 
@@ -80,3 +83,47 @@ type Input = openapi.TesInput
 type Output = openapi.TesOutput
 
 type OutputFileLog = openapi.TesOutputFileLog
+
+func GetTaskState(s string) (State, error) {
+	if s == "" {
+		return State_UNKNOWN, nil
+	}
+	s = strings.ToUpper(s)
+	switch s {
+	case string(State_UNKNOWN):
+		return State_UNKNOWN, nil
+	case string(State_QUEUED):
+		return State_QUEUED, nil
+	case string(State_INITIALIZING):
+		return State_INITIALIZING, nil
+	case string(State_RUNNING):
+		return State_RUNNING, nil
+	case string(State_PAUSED):
+		return State_PAUSED, nil
+	case string(State_COMPLETE):
+		return State_COMPLETE, nil
+	case string(State_EXECUTOR_ERROR):
+		return State_EXECUTOR_ERROR, nil
+	case string(State_SYSTEM_ERROR):
+		return State_SYSTEM_ERROR, nil
+	case string(State_CANCELED):
+		return State_CANCELED, nil
+	default:
+		return "", fmt.Errorf("unknown task state: %s", s)
+	}
+}
+
+func GetTaskView(taskView string) (TaskView, error) {
+	taskView = strings.ToUpper(taskView)
+
+	switch taskView {
+	case string(TaskView_MINIMAL):
+		return TaskView_MINIMAL, nil
+	case string(TaskView_BASIC):
+		return TaskView_BASIC, nil
+	case string(TaskView_FULL):
+		return TaskView_FULL, nil
+	default:
+		return "", fmt.Errorf("unknown task view: %s. valid task views: ['basic', 'minimal', 'full']", taskView)
+	}
+}

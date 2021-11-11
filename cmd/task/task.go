@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/ohsu-comp-bio/funnel/cmd/util"
-	"github.com/ohsu-comp-bio/funnel/tes"
 	"github.com/spf13/cobra"
 )
 
@@ -127,17 +125,7 @@ type hooks struct {
 	Wait   func(server string, ids []string) error
 }
 
-func getTaskState(str string) (tes.State, error) {
-	if str == "" {
-		return tes.State_UNKNOWN, nil
-	}
-	i, ok := tes.State_value[strings.ToUpper(str)]
-	if !ok {
-		return tes.State_UNKNOWN, fmt.Errorf("Unknown task state: %s. Valid states: ['queued', 'initializing', 'running', 'canceled', 'complete', 'system_error', 'executor_error']", str)
-	}
-	return tes.State(i), nil
-}
-
+/*
 func getTaskView(taskView string) (int32, error) {
 	taskView = strings.ToUpper(taskView)
 	var view int32
@@ -148,3 +136,4 @@ func getTaskView(taskView string) (int32, error) {
 	}
 	return view, nil
 }
+*/

@@ -9,6 +9,7 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/tes"
+	"github.com/ohsu-comp-bio/funnel/tes/tesproto"
 )
 
 // State variables for convenience
@@ -59,8 +60,8 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 		return err
 	}
 
-	tl := &tes.TaskLog{}
-	el := &tes.ExecutorLog{}
+	tl := &tesproto.TesTaskLog{}
+	el := &tesproto.TesExecutorLog{}
 
 	switch req.Type {
 	case events.Type_TASK_STATE:
@@ -151,7 +152,7 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 	return err
 }
 
-func transitionTaskState(tx *bolt.Tx, id string, target tes.State) error {
+func transitionTaskState(tx *bolt.Tx, id string, target tesproto.TesState) error {
 	idBytes := []byte(id)
 	current := getTaskState(tx, id)
 
@@ -195,8 +196,8 @@ func transitionTaskState(tx *bolt.Tx, id string, target tes.State) error {
 	return nil
 }
 
-func updateTaskLogs(tx *bolt.Tx, id string, tl *tes.TaskLog) error {
-	tasklog := &tes.TaskLog{}
+func updateTaskLogs(tx *bolt.Tx, id string, tl *tesproto.TesTaskLog) error {
+	tasklog := &tesproto.TesTaskLog{}
 
 	// Try to load existing task log
 	b := tx.Bucket(TasksLog).Get([]byte(id))
@@ -235,12 +236,12 @@ func updateTaskLogs(tx *bolt.Tx, id string, tl *tes.TaskLog) error {
 	return tx.Bucket(TasksLog).Put([]byte(id), logbytes)
 }
 
-func updateExecutorLogs(tx *bolt.Tx, id string, el *tes.ExecutorLog) error {
+func updateExecutorLogs(tx *bolt.Tx, id string, el *tesproto.TesExecutorLog) error {
 	// Check if there is an existing task log
 	o := tx.Bucket(ExecutorLogs).Get([]byte(id))
 	if o != nil {
 		// There is an existing log in the DB, load it
-		existing := &tes.ExecutorLog{}
+		existing := &tesproto.TesExecutorLog{}
 		err := proto.Unmarshal(o, existing)
 		if err != nil {
 			return err

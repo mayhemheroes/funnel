@@ -250,23 +250,20 @@ func (b *HPCBackend) setupTemplatedHPCSubmit(task *tes.Task) (string, error) {
 		return "", err
 	}
 
-	res := task.GetResources()
-	if res == nil {
-		res = &tes.Resources{}
-	}
+	res := task.Resources
 
 	var zone string
-	zones := res.GetZones()
-	if zones != nil {
+	zones := res.Zones
+	if len(zones) > 0 {
 		zone = zones[0]
 	}
 
 	err = submitTpl.Execute(f, map[string]interface{}{
 		"TaskId":  task.Id,
 		"WorkDir": workdir,
-		"Cpus":    res.GetCpuCores(),
-		"RamGb":   res.GetRamGb(),
-		"DiskGb":  res.GetDiskGb(),
+		"Cpus":    res.CpuCores,
+		"RamGb":   res.RamGb,
+		"DiskGb":  res.DiskGb,
 		"Zone":    zone,
 	})
 	if err != nil {

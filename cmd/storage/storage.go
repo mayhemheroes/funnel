@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/golang/protobuf/jsonpb"
 	cmdutil "github.com/ohsu-comp-bio/funnel/cmd/util"
 	"github.com/ohsu-comp-bio/funnel/config"
 	"github.com/ohsu-comp-bio/funnel/logger"
@@ -99,7 +98,7 @@ func NewCommand() *cobra.Command {
 			dec := json.NewDecoder(f)
 			for {
 				task := &tes.Task{}
-				err := jsonpb.UnmarshalNext(dec, task)
+				err := dec.Decode(task)
 				if err == io.EOF {
 					break
 				}

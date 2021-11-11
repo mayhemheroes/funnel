@@ -1,0 +1,133 @@
+
+syntax = "proto3";
+
+option go_package = "github.com/ohsu-comp-bio/funnel/tes/tesproto";
+
+package tes;
+
+
+enum tesFileType { 
+	FILE = 0;
+	DIRECTORY = 1;
+}
+
+enum tesState { 
+	UNKNOWN = 0;
+	QUEUED = 1;
+	INITIALIZING = 2;
+	RUNNING = 3;
+	PAUSED = 4;
+	COMPLETE = 5;
+	EXECUTOR_ERROR = 6;
+	SYSTEM_ERROR = 7;
+	CANCELED = 8;
+}
+
+
+message tesCancelTaskResponse { 
+}
+
+message tesCreateTaskResponse { 
+	string id = 1;
+}
+
+message tesExecutor { 
+	repeated string command = 1;
+	map<string,string> env = 2;
+	string image = 3;
+	string stderr = 4;
+	string stdin = 5;
+	string stdout = 6;
+	string workdir = 7;
+}
+
+message tesExecutorLog { 
+	string end_time = 1;
+	int32 exit_code = 2;
+	string start_time = 3;
+	string stderr = 4;
+	string stdout = 5;
+}
+
+message tesInput { 
+	string content = 1;
+	string description = 2;
+	string name = 3;
+	string path = 4;
+	tesFileType type = 5;
+	string url = 6;
+}
+
+message tesListTasksResponse { 
+	string next_page_token = 1;
+	repeated tesTask tasks = 2;
+}
+
+message tesOutput { 
+	string description = 1;
+	string name = 2;
+	string path = 3;
+	tesFileType type = 4;
+	string url = 5;
+}
+
+message tesOutputFileLog { 
+	string path = 1;
+	string size_bytes = 2;
+	string url = 3;
+}
+
+message tesResources { 
+	int32 cpu_cores = 1;
+	double disk_gb = 2;
+	bool preemptible = 3;
+	double ram_gb = 4;
+	repeated string zones = 5;
+}
+
+message tesServiceInfo { 
+	string contactUrl = 1;
+	string createdAt = 2;
+	string description = 3;
+	string documentationUrl = 4;
+	string environment = 5;
+	string id = 6;
+	string name = 7;
+	map<string,string> organization = 8;
+	repeated string storage = 9;
+	tesServiceType type = 10;
+	string updatedAt = 11;
+	string version = 12;
+}
+
+message tesServiceType { 
+	string artifact = 1;
+	string group = 2;
+	string version = 3;
+}
+
+message tesTask { 
+	string creation_time = 1;
+	string description = 2;
+	repeated tesExecutor executors = 3;
+	string id = 4;
+	repeated tesInput inputs = 5;
+	repeated tesTaskLog logs = 6;
+	string name = 7;
+	repeated tesOutput outputs = 8;
+	tesResources resources = 9;
+	tesState state = 10;
+	map<string,string> tags = 11;
+	repeated string volumes = 12;
+}
+
+message tesTaskLog { 
+	string end_time = 1;
+	repeated tesExecutorLog logs = 2;
+	map<string,string> metadata = 3;
+	repeated tesOutputFileLog outputs = 4;
+	string start_time = 5;
+	repeated string system_logs = 6;
+}
+
+

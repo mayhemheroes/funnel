@@ -1,6 +1,7 @@
 package task
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -19,7 +20,7 @@ func Get(server string, ids []string, taskView string, w io.Writer) error {
 
 	res := []string{}
 
-	view, err := getTaskView(taskView)
+	view, err := tes.GetTaskView(taskView)
 	if err != nil {
 		return err
 	}
@@ -32,11 +33,11 @@ func Get(server string, ids []string, taskView string, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		out, err := cli.Marshaler.MarshalToString(resp)
+		out, err := json.Marshal(resp)
 		if err != nil {
 			return err
 		}
-		res = append(res, out)
+		res = append(res, string(out))
 	}
 
 	for _, x := range res {

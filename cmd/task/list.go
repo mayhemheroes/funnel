@@ -1,6 +1,7 @@
 package task
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -18,7 +19,7 @@ func List(server, taskView, pageToken, stateFilter string, tagsFilter []string, 
 		return err
 	}
 
-	view, err := getTaskView(taskView)
+	view, err := tes.GetTaskView(taskView)
 	if err != nil {
 		return err
 	}
@@ -62,7 +63,7 @@ func List(server, taskView, pageToken, stateFilter string, tagsFilter []string, 
 		}
 	}
 
-	response, err := cli.Marshaler.MarshalToString(output)
+	response, err := json.Marshal(output)
 	if err != nil {
 		return fmt.Errorf("marshaling error: %v", err)
 	}

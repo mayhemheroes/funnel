@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/golang/protobuf/jsonpb"
 	"github.com/ohsu-comp-bio/funnel/tes"
 	"golang.org/x/net/context"
 )
@@ -22,30 +21,20 @@ func Create(server string, files []string, reader io.Reader, writer io.Writer) e
 
 	for _, taskFile := range files {
 		f, err := os.Open(taskFile)
-		defer f.Close()
 		if err != nil {
 			return err
 		}
-		reader = io.MultiReader(reader, f)
-	}
 
-	dec := json.NewDecoder(reader)
-	for {
 		var task tes.Task
-		err := jsonpb.UnmarshalNext(dec, &task)
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return fmt.Errorf("can't load task: %s", err)
-		}
+		dec := json.NewDecoder(reader)
+		err = dec.Decode(&task)
 
 		r, err := cli.CreateTask(context.Background(), &task)
 		if err != nil {
 			return err
 		}
 		fmt.Fprintln(writer, r.Id)
+		f.Close()
 	}
-
 	return nil
 }

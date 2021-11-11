@@ -3,16 +3,14 @@ option go_package="github.com/ohsu-comp-bio/funnel/events";
 
 package events;
 
-import "models/tes_output_file_log.proto";
-import "models/tes_state.proto";
-import "models/tes_task.proto";
+import "tes.proto";
 
 message Metadata {
   map<string, string> value = 1;
 }
 
 message Outputs {
-  repeated models.TesOutputFileLog value = 1;
+  repeated tes.tesOutputFileLog value = 1;
 }
 
 message SystemLog {
@@ -41,7 +39,7 @@ message Event {
   string id = 1;
   string timestamp = 2;
   oneof data {
-    models.TesState state = 3;
+    tes.tesState state = 3;
     string start_time = 4;
     string end_time = 5;
     Outputs outputs = 6;
@@ -50,7 +48,7 @@ message Event {
     string stdout = 13;
     string stderr = 14;
     SystemLog system_log = 15;
-    models.TesTask task = 19;
+    tes.tesTask task = 19;
   }
   uint32 attempt = 16;
   uint32 index = 17;

@@ -36,13 +36,13 @@ func (s Scores) Weighted(w map[string]float32) Scores {
 
 // DefaultScores returns a default set of scores.
 func DefaultScores(w *Node, t *tes.Task) Scores {
-	req := t.GetResources()
+	req := t.Resources
 	tot := w.GetResources()
 	avail := w.GetAvailable()
 	s := Scores{}
 
-	s[CPU] = float32(avail.GetCpus()+req.GetCpuCores()) / float32(tot.GetCpus())
-	s[RAM] = float32(avail.GetRamGb() + req.GetRamGb()/tot.GetRamGb())
+	s[CPU] = float32(avail.GetCpus()+uint32(req.CpuCores)) / float32(tot.GetCpus())
+	s[RAM] = float32(avail.GetRamGb() + req.RamGb/tot.GetRamGb())
 	return s
 }
 
