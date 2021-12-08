@@ -14,6 +14,9 @@ type TesServiceInfoAllOf struct {
 	// Lists some, but not necessarily all, storage locations supported by the service.
 	Storage []string `json:"storage,omitempty"`
 
+	// Lists all tesResources.backend_parameters keys supported by the service
+	TesResourcesBackendParameters []string `json:"tesResources_backend_parameters,omitempty"`
+
 	Type TesServiceType `json:"type,omitempty"`
 }
 

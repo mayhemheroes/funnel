@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 	"text/template"
@@ -75,6 +74,53 @@ func getFields(schema *openapi3.SchemaRef) []Field {
 	return fields
 }
 
+func parseMessageSchema(name string, schema *openapi3.SchemaRef) (Message, error) {
+	if schema.Value.Properties != nil {
+		//fmt.Printf("%s %#v\n", name, schema.Value.Properties)
+		fields := getFields(schema)
+		m := Message{Name: name, Fields: fields}
+		return m, nil
+	} else if schema.Value.AllOf != nil {
+		//fmt.Printf("All of %s %#v\n", name, schema.Value.AllOf)
+		fieldMap := map[string]Field{}
+		for i := range schema.Value.AllOf {
+			newFields := getFields(schema.Value.AllOf[i])
+			//fmt.Printf("\t%#v\n", newFields)
+			for _, f := range newFields {
+				if x, ok := fieldMap[f.Name]; !ok {
+					fieldMap[f.Name] = f
+				} else {
+					//if same field from two sources, pick local one
+					if x.Source.Ref != "" && f.Source.Ref == "" {
+						fieldMap[f.Name] = f
+					}
+				}
+			}
+		}
+		fields := []Field{}
+		for _, v := range fieldMap {
+			fields = append(fields, v)
+		}
+		//fmt.Printf("Fields: %#vs\n", fields)
+		sort.SliceStable(fields, func(i, j int) bool { return fields[i].Name < fields[j].Name })
+		for i := range fields {
+			fields[i].Id = i + 1
+		}
+		m := Message{Name: name, Fields: fields}
+		return m, nil
+	} else if schema.Value.Enum != nil {
+		return Message{}, fmt.Errorf("Message is Enum")
+	} else {
+		m := Message{Name: name, Fields: []Field{}}
+		return m, nil
+	}
+}
+
+func parseMessageEnum(name string, schema *openapi3.SchemaRef) (Enum, error) {
+	e := Enum{Name: name, Values: schema.Value.Enum}
+	return e, nil
+}
+
 func main() {
 	flag.Parse()
 
@@ -89,49 +135,38 @@ func main() {
 	enums := []Enum{}
 
 	if err != nil {
-		fmt.Printf("Error: %s\n", err)
+		fmt.Printf("Parsing Error: %s\n", err)
 	} else {
 		//fmt.Printf("%#v\n", doc.Components.Parameters)
 		for name, schema := range doc.Components.Schemas {
-			if schema.Value.Properties != nil {
-				//fmt.Printf("%s %#v\n", name, schema.Value.Properties)
-				fields := getFields(schema)
-				m := Message{Name: name, Fields: fields}
-				messages = append(messages, m)
-			} else if schema.Value.AllOf != nil {
-				//fmt.Printf("All of %s %#v\n", name, schema.Value.AllOf)
-				fieldMap := map[string]Field{}
-				for i := range schema.Value.AllOf {
-					newFields := getFields(schema.Value.AllOf[i])
-					//fmt.Printf("\t%#v\n", newFields)
-					for _, f := range newFields {
-						if x, ok := fieldMap[f.Name]; !ok {
-							fieldMap[f.Name] = f
+			if schema.Value.Enum != nil {
+				if e, err := parseMessageEnum(name, schema); err == nil {
+					enums = append(enums, e)
+				}
+			} else {
+				if e, err := parseMessageSchema(name, schema); err == nil {
+					messages = append(messages, e)
+				}
+			}
+		}
+
+		for path, req := range doc.Paths {
+			if req.Get != nil {
+				for _, param := range req.Get.Parameters {
+					if param.Value.Schema.Value.Enum != nil {
+						if m, err := parseMessageEnum(param.Value.Name, param.Value.Schema); err == nil {
+							fmt.Printf("enum: %#v\n", m)
 						} else {
-							//if same field from two sources, pick local one
-							if x.Source.Ref != "" && f.Source.Ref == "" {
-								fieldMap[f.Name] = f
-							}
+							fmt.Printf("%s %#v\n", path, param.Value.Schema.Value)
+						}
+					} else {
+						if m, err := parseMessageSchema(param.Value.Name, param.Value.Schema); err == nil {
+							fmt.Printf("message: %#v\n", m)
+						} else {
+							fmt.Printf("%s %#v\n", path, param.Value.Schema.Value)
 						}
 					}
 				}
-				fields := []Field{}
-				for _, v := range fieldMap {
-					fields = append(fields, v)
-				}
-				//fmt.Printf("Fields: %#vs\n", fields)
-				sort.SliceStable(fields, func(i, j int) bool { return fields[i].Name < fields[j].Name })
-				for i := range fields {
-					fields[i].Id = i + 1
-				}
-				m := Message{Name: name, Fields: fields}
-				messages = append(messages, m)
-			} else if schema.Value.Enum != nil {
-				e := Enum{Name: name, Values: schema.Value.Enum}
-				enums = append(enums, e)
-			} else {
-				m := Message{Name: name, Fields: []Field{}}
-				messages = append(messages, m)
 			}
 		}
 	}
@@ -141,7 +176,7 @@ func main() {
 	tmpl, err := template.New("proto").Parse(`
 syntax = "proto3";
 
-option go_package = "github.com/ohsu-comp-bio/funnel/tes/tesproto";
+option go_package = "github.com/ohsu-comp-bio/funnel/tes";
 
 package tes;
 
@@ -162,6 +197,6 @@ message {{$message.Name}} { {{range $j, $field := $message.Fields}}
 	if err != nil {
 		fmt.Printf("Template Error: %s\n", err)
 	} else {
-		tmpl.Execute(os.Stdout, map[string]interface{}{"messages": messages, "enums": enums})
+		//tmpl.Execute(os.Stdout, map[string]interface{}{"messages": messages, "enums": enums})
 	}
 }

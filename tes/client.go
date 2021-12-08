@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"encoding/json"
+
 	"github.com/ohsu-comp-bio/funnel/util"
 	"golang.org/x/net/context"
 )
@@ -41,22 +42,22 @@ func NewClient(address string) (*Client, error) {
 			Timeout: 60 * time.Second,
 		},
 		//Marshaler: &Marshaler,
-		User:      user,
-		Password:  password,
+		User:     user,
+		Password: password,
 	}, nil
 }
 
 // Client represents the HTTP Task client.
 type Client struct {
-	address   string
-	client    *http.Client
+	address string
+	client  *http.Client
 	//Marshaler *jsonpb.Marshaler
-	User      string
-	Password  string
+	User     string
+	Password string
 }
 
 // GetTask returns the raw bytes from GET /v1/tasks/{id}
-func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*Task, error) {
+func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*TesTask, error) {
 	// Send request
 	u := c.address + "/v1/tasks/" + req.Id + "?view=" + string(req.View)
 	hreq, _ := http.NewRequest("GET", u, nil)
@@ -101,7 +102,7 @@ func (c *Client) ListTasks(ctx context.Context, req *ListTasksRequest) (*ListTas
 		return nil, err
 	}
 	// Parse response
-	resp := &ListTasksResponse{}
+	resp := &TesListTasksResponse{}
 	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
@@ -110,7 +111,7 @@ func (c *Client) ListTasks(ctx context.Context, req *ListTasksRequest) (*ListTas
 }
 
 // CreateTask POSTs a Task message to /v1/tasks
-func (c *Client) CreateTask(ctx context.Context, task *Task) (*CreateTaskResponse, error) {
+func (c *Client) CreateTask(ctx context.Context, task *TesTask) (*TesCreateTaskResponse, error) {
 	verr := Validate(task)
 	if verr != nil {
 		return nil, fmt.Errorf("invalid task message: %v", verr)

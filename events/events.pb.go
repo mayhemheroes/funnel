@@ -7,7 +7,7 @@
 package events
 
 import (
-	tesproto "github.com/ohsu-comp-bio/funnel/tes/tesproto"
+	tes "github.com/ohsu-comp-bio/funnel/tes"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -152,7 +152,7 @@ type Outputs struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Value []*tesproto.TesOutputFileLog `protobuf:"bytes,1,rep,name=value,proto3" json:"value,omitempty"`
+	Value []*tes.TesOutputFileLog `protobuf:"bytes,1,rep,name=value,proto3" json:"value,omitempty"`
 }
 
 func (x *Outputs) Reset() {
@@ -187,7 +187,7 @@ func (*Outputs) Descriptor() ([]byte, []int) {
 	return file_events_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Outputs) GetValue() []*tesproto.TesOutputFileLog {
+func (x *Outputs) GetValue() []*tes.TesOutputFileLog {
 	if x != nil {
 		return x.Value
 	}
@@ -334,11 +334,11 @@ func (m *Event) GetData() isEvent_Data {
 	return nil
 }
 
-func (x *Event) GetState() tesproto.TesState {
+func (x *Event) GetState() tes.TesState {
 	if x, ok := x.GetData().(*Event_State); ok {
 		return x.State
 	}
-	return tesproto.TesState(0)
+	return tes.TesState(0)
 }
 
 func (x *Event) GetStartTime() string {
@@ -397,7 +397,7 @@ func (x *Event) GetSystemLog() *SystemLog {
 	return nil
 }
 
-func (x *Event) GetTask() *tesproto.TesTask {
+func (x *Event) GetTask() *tes.TesTask {
 	if x, ok := x.GetData().(*Event_Task); ok {
 		return x.Task
 	}
@@ -430,7 +430,7 @@ type isEvent_Data interface {
 }
 
 type Event_State struct {
-	State tesproto.TesState `protobuf:"varint,3,opt,name=state,proto3,enum=tes.TesState,oneof"`
+	State tes.TesState `protobuf:"varint,3,opt,name=state,proto3,enum=tes.TesState,oneof"`
 }
 
 type Event_StartTime struct {
@@ -466,7 +466,7 @@ type Event_SystemLog struct {
 }
 
 type Event_Task struct {
-	Task *tesproto.TesTask `protobuf:"bytes,19,opt,name=task,proto3,oneof"`
+	Task *tes.TesTask `protobuf:"bytes,19,opt,name=task,proto3,oneof"`
 }
 
 func (*Event_State) isEvent_Data() {}
@@ -629,17 +629,17 @@ func file_events_proto_rawDescGZIP() []byte {
 var file_events_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_events_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_events_proto_goTypes = []interface{}{
-	(Type)(0),                         // 0: events.Type
-	(*Metadata)(nil),                  // 1: events.Metadata
-	(*Outputs)(nil),                   // 2: events.Outputs
-	(*SystemLog)(nil),                 // 3: events.SystemLog
-	(*Event)(nil),                     // 4: events.Event
-	(*WriteEventResponse)(nil),        // 5: events.WriteEventResponse
-	nil,                               // 6: events.Metadata.ValueEntry
-	nil,                               // 7: events.SystemLog.FieldsEntry
-	(*tesproto.TesOutputFileLog)(nil), // 8: tes.tesOutputFileLog
-	(tesproto.TesState)(0),            // 9: tes.tesState
-	(*tesproto.TesTask)(nil),          // 10: tes.tesTask
+	(Type)(0),                    // 0: events.Type
+	(*Metadata)(nil),             // 1: events.Metadata
+	(*Outputs)(nil),              // 2: events.Outputs
+	(*SystemLog)(nil),            // 3: events.SystemLog
+	(*Event)(nil),                // 4: events.Event
+	(*WriteEventResponse)(nil),   // 5: events.WriteEventResponse
+	nil,                          // 6: events.Metadata.ValueEntry
+	nil,                          // 7: events.SystemLog.FieldsEntry
+	(*tes.TesOutputFileLog)(nil), // 8: tes.tesOutputFileLog
+	(tes.TesState)(0),            // 9: tes.tesState
+	(*tes.TesTask)(nil),          // 10: tes.tesTask
 }
 var file_events_proto_depIdxs = []int32{
 	6,  // 0: events.Metadata.value:type_name -> events.Metadata.ValueEntry

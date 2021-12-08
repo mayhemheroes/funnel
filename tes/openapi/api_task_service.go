@@ -158,6 +158,8 @@ func (c *TaskServiceApiController) GetTask(w http.ResponseWriter, r *http.Reques
 func (c *TaskServiceApiController) ListTasks(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	namePrefixParam := query.Get("name_prefix")
+	stateParam := query.Get("state")
+	tagsParam := query.Get("tags")
 	pageSizeParam, err := parseInt64Parameter(query.Get("page_size"), false)
 	if err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
@@ -165,7 +167,7 @@ func (c *TaskServiceApiController) ListTasks(w http.ResponseWriter, r *http.Requ
 	}
 	pageTokenParam := query.Get("page_token")
 	viewParam := query.Get("view")
-	result, err := c.service.ListTasks(r.Context(), namePrefixParam, pageSizeParam, pageTokenParam, viewParam)
+	result, err := c.service.ListTasks(r.Context(), namePrefixParam, stateParam, tagsParam, pageSizeParam, pageTokenParam, viewParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

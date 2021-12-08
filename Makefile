@@ -37,7 +37,7 @@ build:
 
 # Generate the protobuf/gRPC code
 proto:
-	@cd tes/tesproto && protoc \
+	@cd tes && protoc \
 		$(PROTO_INC) \
 		--go_out=. \
 	  	--go_opt paths=source_relative \
@@ -51,10 +51,10 @@ proto:
 		scheduler.proto
 	@cd events && protoc \
 		$(PROTO_INC) \
-		-I ../tes/tesproto \
+		-I ../tes/ \
 		--go_out=. \
 		--go_opt paths=source_relative \
-		--go_opt=Mtes.proto=github.com/ohsu-comp-bio/funnel/tes/tesproto \
+		--go_opt=Mtes.proto=github.com/ohsu-comp-bio/funnel/tes \
 		--go-grpc_out ./ \
 		events.proto
 
@@ -66,7 +66,7 @@ openapi:
 	@mv tmp/openapi tes/
 	@rm -rf tes/tesproto
 	@mkdir tes/tesproto
-	@go run ./util/openapi2proto/main.go ./tes/task-execution-schemas/openapi/task_execution_service.openapi.yaml > tes/tesproto/tes.proto
+	@go run ./util/openapi2proto/main.go ./tes/task-execution-schemas/openapi/task_execution_service.openapi.yaml > tes/tes.proto
 
 openapi-depends:
 	@curl -o openapi-generator-cli.jar https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/5.3.0/openapi-generator-cli-5.3.0.jar

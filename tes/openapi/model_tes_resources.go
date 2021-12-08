@@ -26,6 +26,12 @@ type TesResources struct {
 
 	// Request that the task be run in these compute zones. How this string is utilized will be dependent on the backend system. For example, a system based on a cluster queueing system may use this string to define priorty queue to which the job is assigned.
 	Zones []string `json:"zones,omitempty"`
+
+	// Key/value pairs for backend configuration. ServiceInfo shall return a list of keys that a backend supports. Keys are case insensitive. It is expected that clients pass all runtime or hardware requirement key/values that are not mapped to existing tesResources properties to backend_parameters. Backends shall log system warnings if a key is passed that is unsupported. Backends shall not store or return unsupported keys if included in a task. If backend_parameters_strict equals true, backends should fail the task if any key/values are unsupported, otherwise, backends should attempt to run the task Intended uses include VM size selection, coprocessor configuration, etc. Example: ``` {   \"backend_parameters\" : {     \"VmSize\" : \"Standard_D64_v3\"   } } ```
+	BackendParameters map[string]string `json:"backend_parameters,omitempty"`
+
+	// If set to true, backends should fail the task if any backend_parameters key/values are unsupported, otherwise, backends should attempt to run the task
+	BackendParametersStrict bool `json:"backend_parameters_strict,omitempty"`
 }
 
 // AssertTesResourcesRequired checks if the required fields are not zero-ed

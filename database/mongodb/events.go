@@ -9,7 +9,6 @@ import (
 	"github.com/globalsign/mgo/bson"
 	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/tes"
-	"github.com/ohsu-comp-bio/funnel/tes/tesproto"
 	"github.com/ohsu-comp-bio/funnel/util"
 )
 
@@ -25,7 +24,7 @@ func (db *MongoDB) WriteEvent(ctx context.Context, req *events.Event) error {
 	switch req.Type {
 	case events.Type_TASK_CREATED:
 		task := req.GetTask()
-		task.Logs = []*tesproto.TaskLog{
+		task.Logs = []*tes.TaskLog{
 			{
 				Logs: []tes.ExecutorLog{},
 			},

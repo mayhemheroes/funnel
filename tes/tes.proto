@@ -1,15 +1,10 @@
 
 syntax = "proto3";
 
-option go_package = "github.com/ohsu-comp-bio/funnel/tes/tesproto";
+option go_package = "github.com/ohsu-comp-bio/funnel/tes";
 
 package tes;
 
-
-enum tesFileType { 
-	FILE = 0;
-	DIRECTORY = 1;
-}
 
 enum tesState { 
 	UNKNOWN = 0;
@@ -21,6 +16,11 @@ enum tesState {
 	EXECUTOR_ERROR = 6;
 	SYSTEM_ERROR = 7;
 	CANCELED = 8;
+}
+
+enum tesFileType { 
+	FILE = 0;
+	DIRECTORY = 1;
 }
 
 
@@ -78,11 +78,13 @@ message tesOutputFileLog {
 }
 
 message tesResources { 
-	int32 cpu_cores = 1;
-	double disk_gb = 2;
-	bool preemptible = 3;
-	double ram_gb = 4;
-	repeated string zones = 5;
+	map<string,string> backend_parameters = 1;
+	bool backend_parameters_strict = 2;
+	int32 cpu_cores = 3;
+	double disk_gb = 4;
+	bool preemptible = 5;
+	double ram_gb = 6;
+	repeated string zones = 7;
 }
 
 message tesServiceInfo { 
@@ -95,9 +97,10 @@ message tesServiceInfo {
 	string name = 7;
 	map<string,string> organization = 8;
 	repeated string storage = 9;
-	tesServiceType type = 10;
-	string updatedAt = 11;
-	string version = 12;
+	repeated string tesResources_backend_parameters = 10;
+	tesServiceType type = 11;
+	string updatedAt = 12;
+	string version = 13;
 }
 
 message tesServiceType { 

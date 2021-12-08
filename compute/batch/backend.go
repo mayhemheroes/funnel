@@ -13,7 +13,6 @@ import (
 	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/logger"
 	"github.com/ohsu-comp-bio/funnel/tes"
-	"github.com/ohsu-comp-bio/funnel/tes/tesproto"
 	util "github.com/ohsu-comp-bio/funnel/util/aws"
 )
 
@@ -69,7 +68,7 @@ func (b *Backend) Close() {
 }
 
 // Submit submits a task to the AWS batch service.
-func (b *Backend) Submit(task *tesproto.TesTask) error {
+func (b *Backend) Submit(task *tes.TesTask) error {
 	ctx := context.Background()
 
 	req := &batch.SubmitJobInput{
