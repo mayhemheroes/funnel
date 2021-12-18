@@ -56,6 +56,7 @@ proto:
 		--go_opt paths=source_relative \
 		--go_opt=Mtes.proto=github.com/ohsu-comp-bio/funnel/tes \
 		--go-grpc_out ./ \
+		--go-grpc_opt paths=source_relative \
 		events.proto
 
 

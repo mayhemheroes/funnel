@@ -6,6 +6,11 @@ option go_package = "github.com/ohsu-comp-bio/funnel/tes";
 package tes;
 
 
+enum FileType { 
+	FILE = 0;
+	DIRECTORY = 1;
+}
+
 enum State { 
 	UNKNOWN = 0;
 	QUEUED = 1;
@@ -16,11 +21,6 @@ enum State {
 	EXECUTOR_ERROR = 6;
 	SYSTEM_ERROR = 7;
 	CANCELED = 8;
-}
-
-enum FileType { 
-	FILE = 0;
-	DIRECTORY = 1;
 }
 
 enum view { 
