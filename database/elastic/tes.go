@@ -16,9 +16,9 @@ func (es *Elastic) getTask(ctx context.Context, req *tes.GetTaskRequest) (*elast
 		Id(req.Id)
 
 	switch req.View {
-	case tes.TaskView_BASIC:
+	case tes.View_BASIC.String():
 		g = g.FetchSource(true).FetchSourceContext(basic)
-	case tes.TaskView_MINIMAL:
+	case tes.View_MINIMAL.String():
 		g = g.FetchSource(true).FetchSourceContext(minimal)
 	}
 
@@ -68,9 +68,9 @@ func (es *Elastic) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*t
 	q = q.Sort("id", false).Size(pageSize)
 
 	switch req.View {
-	case tes.TaskView_BASIC:
+	case tes.View_BASIC.String():
 		q = q.FetchSource(true).FetchSourceContext(basic)
-	case tes.TaskView_MINIMAL:
+	case tes.View_MINIMAL.String():
 		q = q.FetchSource(true).FetchSourceContext(minimal)
 	}
 

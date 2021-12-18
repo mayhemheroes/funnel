@@ -29,7 +29,7 @@ func TestCreateJobc(t *testing.T) {
 
 	task := &tes.Task{
 		Id: "task1",
-		Executors: []tes.Executor{
+		Executors: []*tes.Executor{
 			{
 				Image:   "alpine",
 				Command: []string{"echo", "hello world"},

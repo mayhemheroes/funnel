@@ -17,7 +17,7 @@ import (
 
 
 // TaskServiceApiRouter defines the required methods for binding the api requests to a responses for the TaskServiceApi
-// The TaskServiceApiRouter implementation should parse necessary information from the http request,
+// The TaskServiceApiRouter implementation should parse necessary information from the http request, 
 // pass the data to a TaskServiceApiServicer to perform the required actions, then write the service results to the http response.
 type TaskServiceApiRouter interface { 
 	CancelTask(http.ResponseWriter, *http.Request)
@@ -29,8 +29,8 @@ type TaskServiceApiRouter interface {
 
 
 // TaskServiceApiServicer defines the api actions for the TaskServiceApi service
-// This interface intended to stay up to date with the openapi yaml used to generate it,
-// while the service implementation can ignored with the .openapi-generator-ignore file
+// This interface intended to stay up to date with the openapi yaml used to generate it, 
+// while the service implementation can ignored with the .openapi-generator-ignore file 
 // and updated with the logic required for the API.
 type TaskServiceApiServicer interface { 
 	CancelTask(context.Context, string) (ImplResponse, error)

@@ -15,8 +15,8 @@ import (
 	"errors"
 )
 
-// TaskServiceApiService is a service that implements the logic for the TaskServiceApiServicer
-// This service should implement the business logic for every endpoint for the TaskServiceApi API.
+// TaskServiceApiService is a service that implents the logic for the TaskServiceApiServicer
+// This service should implement the business logic for every endpoint for the TaskServiceApi API. 
 // Include any external packages or services that will be required by this service.
 type TaskServiceApiService struct {
 }
@@ -80,3 +80,4 @@ func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string
 
 	return Response(http.StatusNotImplemented, nil), errors.New("ListTasks method not implemented")
 }
+

@@ -20,12 +20,12 @@ func TestSetupTemplatedHPCSubmit(t *testing.T) {
 
 	task := &tes.Task{
 		Id: "test-taskid",
-		Executors: []tes.Executor{
+		Executors: []*tes.Executor{
 			{
 				Command: []string{"echo test"},
 			},
 		},
-		Resources: tes.Resources{
+		Resources: &tes.Resources{
 			CpuCores: 1,
 			RamGb:    1.0,
 			DiskGb:   10.0,

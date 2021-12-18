@@ -14,11 +14,11 @@ func TestParse(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expected := []tes.TesTask{
+	expected := []tes.Task{
 		{
 			Name:        "myname",
 			Description: "mydesc",
-			Inputs: []*tes.TesInput{
+			Inputs: []*tes.Input{
 				{
 					Name: "f1",
 					Url:  "file://" + cwd + "/testdata/f1.txt",
@@ -33,7 +33,7 @@ func TestParse(t *testing.T) {
 					Name: "f4",
 					Url:  "file://" + cwd + "/testdata/f4",
 					Path: "/inputs" + cwd + "/testdata/f4",
-					Type: tes.TesFileType_DIRECTORY,
+					Type: tes.FileType_DIRECTORY,
 				},
 				{
 					Name:    "c1",
@@ -41,7 +41,7 @@ func TestParse(t *testing.T) {
 					Content: "test content\n",
 				},
 			},
-			Outputs: []*tes.TesOutput{
+			Outputs: []*tes.Output{
 				{
 					Name: "stdout-0",
 					Url:  "file://" + cwd + "/testdata/stdout-first",
@@ -66,17 +66,17 @@ func TestParse(t *testing.T) {
 					Name: "o9",
 					Url:  "file://" + cwd + "/testdata/o9",
 					Path: "/outputs" + cwd + "/testdata/o9",
-					Type: tes.TesFileType_DIRECTORY,
+					Type: tes.FileType_DIRECTORY,
 				},
 			},
-			Resources: &tes.TesResources{
+			Resources: &tes.Resources{
 				CpuCores:    8,
 				Preemptible: true,
 				RamGb:       32.0,
 				DiskGb:      100.0,
 				Zones:       []string{"zone1", "zone2"},
 			},
-			Executors: []*tes.TesExecutor{
+			Executors: []*tes.Executor{
 				{
 					Image:   "busybox",
 					Command: []string{"sh", "-c", "echo hello"},

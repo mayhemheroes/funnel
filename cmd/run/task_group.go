@@ -16,7 +16,7 @@ type taskGroup struct {
 	client    *tes.Client
 }
 
-func (tg *taskGroup) runTask(t *tes.TesTask, wait bool, waitFor []string) {
+func (tg *taskGroup) runTask(t *tes.Task, wait bool, waitFor []string) {
 	if tg.err == nil {
 		tg.err = make(chan error)
 	}
@@ -46,7 +46,7 @@ func (tg *taskGroup) wait() error {
 	}
 }
 
-func (tg *taskGroup) _run(task *tes.TesTask, wait bool, waitFor []string) error {
+func (tg *taskGroup) _run(task *tes.Task, wait bool, waitFor []string) error {
 
 	if tg.printTask {
 		// Marshal message to JSON

@@ -24,7 +24,7 @@ func DuplicateKeyErr(key string) error {
 }
 
 // Parse CLI variable definitions (e.g "varname=value") into usable task values.
-func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
+func valsToTask(vals flagVals) (task *tes.Task, err error) {
 
 	// Any error occurring during parsing the variables an preparing the task
 	// is a fatal error, so I'm using panic/recover to simplify error handling.
@@ -37,13 +37,13 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 	environ := map[string]string{}
 
 	// Build the task message
-	task = &tes.TesTask{
+	task = &tes.Task{
 		Name:        vals.name,
 		Description: vals.description,
 	}
 
 	if vals.cpu > 0 || vals.ram > 0 || vals.disk > 0 || len(vals.zones) > 0 || vals.preemptible {
-		task.Resources = &tes.TesResources{
+		task.Resources = &tes.Resources{
 			CpuCores:    int32(vals.cpu),
 			RamGb:       vals.ram,
 			DiskGb:      vals.disk,
@@ -69,7 +69,7 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 
 		if exec.stdin != "" {
 			stdin = fmt.Sprintf("/inputs/stdin-%d", i)
-			task.Inputs = append(task.Inputs, &tes.TesInput{
+			task.Inputs = append(task.Inputs, &tes.Input{
 				Name: fmt.Sprintf("stdin-%d", i),
 				Url:  resolvePath(exec.stdin),
 				Path: stdin,
@@ -78,7 +78,7 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 
 		if exec.stdout != "" {
 			stdout = fmt.Sprintf("/outputs/stdout-%d", i)
-			task.Outputs = append(task.Outputs, &tes.TesOutput{
+			task.Outputs = append(task.Outputs, &tes.Output{
 				Name: fmt.Sprintf("stdout-%d", i),
 				Url:  resolvePath(exec.stdout),
 				Path: stdout,
@@ -87,14 +87,14 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 
 		if exec.stderr != "" {
 			stderr = fmt.Sprintf("/outputs/stderr-%d", i)
-			task.Outputs = append(task.Outputs, &tes.TesOutput{
+			task.Outputs = append(task.Outputs, &tes.Output{
 				Name: fmt.Sprintf("stderr-%d", i),
 				Url:  resolvePath(exec.stderr),
 				Path: stderr,
 			})
 		}
 
-		task.Executors = append(task.Executors, &tes.TesExecutor{
+		task.Executors = append(task.Executors, &tes.Executor{
 			Image:   vals.container,
 			Command: cmd,
 			Workdir: vals.workdir,
@@ -118,7 +118,7 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 		url := resolvePath(v)
 		path := "/inputs/" + stripStoragePrefix(url)
 		setenv(k, path)
-		task.Inputs = append(task.Inputs, &tes.TesInput{
+		task.Inputs = append(task.Inputs, &tes.Input{
 			Name: k,
 			Url:  url,
 			Path: path,
@@ -130,11 +130,11 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 		url := resolvePath(v)
 		path := "/inputs/" + stripStoragePrefix(url)
 		setenv(k, path)
-		task.Inputs = append(task.Inputs, &tes.TesInput{
+		task.Inputs = append(task.Inputs, &tes.Input{
 			Name: k,
 			Url:  url,
 			Path: path,
-			Type: tes.TesFileType_DIRECTORY,
+			Type: tes.FileType_DIRECTORY,
 		})
 	}
 
@@ -142,7 +142,7 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 		k, v := parseCliVar(raw)
 		path := "/inputs/" + stripStoragePrefix(resolvePath(v))
 		setenv(k, path)
-		task.Inputs = append(task.Inputs, &tes.TesInput{
+		task.Inputs = append(task.Inputs, &tes.Input{
 			Name:    k,
 			Path:    path,
 			Content: getContent(v),
@@ -154,7 +154,7 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 		url := resolvePath(v)
 		path := "/outputs/" + stripStoragePrefix(url)
 		setenv(k, path)
-		task.Outputs = append(task.Outputs, &tes.TesOutput{
+		task.Outputs = append(task.Outputs, &tes.Output{
 			Name: k,
 			Url:  url,
 			Path: path,
@@ -166,11 +166,11 @@ func valsToTask(vals flagVals) (task *tes.TesTask, err error) {
 		url := resolvePath(v)
 		path := "/outputs/" + stripStoragePrefix(url)
 		setenv(k, path)
-		task.Outputs = append(task.Outputs, &tes.TesOutput{
+		task.Outputs = append(task.Outputs, &tes.Output{
 			Name: k,
 			Url:  url,
 			Path: path,
-			Type: tes.TesFileType_DIRECTORY,
+			Type: tes.FileType_DIRECTORY,
 		})
 	}
 

@@ -56,15 +56,6 @@ func Base64Decode(raw string) (*Task, error) {
 // ErrNotFound is returned when a task is not found.
 var ErrNotFound = errors.New("task not found")
 
-// Shorthand for task views
-const (
-	Minimal   = TaskView_MINIMAL
-	Basic     = TaskView_BASIC
-	Full      = TaskView_FULL
-	File      = FileType_FILE
-	Directory = FileType_DIRECTORY
-)
-
 // GenerateID generates a task ID string.
 // IDs are globally unique and sortable.
 func GenerateID() string {
@@ -140,11 +131,11 @@ func GetMinimalView(task *Task) *Task {
 
 // GetTaskLog gets the task log entry at the given index "i".
 // If the entry doesn't exist, empty logs will be appended up to "i".
-func GetTaskLog(task *Task, i int) TaskLog {
+func GetTaskLog(task *Task, i int) *TaskLog {
 
 	// Grow slice length if necessary
 	for j := len(task.Logs); j <= i; j++ {
-		task.Logs = append(task.Logs, TaskLog{})
+		task.Logs = append(task.Logs, &TaskLog{})
 	}
 
 	return task.Logs[i]
@@ -152,12 +143,12 @@ func GetTaskLog(task *Task, i int) TaskLog {
 
 // GetExecLog gets the executor log entry at the given index "i".
 // If the entry doesn't exist, empty logs will be appended up to "i".
-func GetExecLog(task *Task, attempt int, i int) ExecutorLog {
+func GetExecLog(task *Task, attempt int, i int) *ExecutorLog {
 	tl := task.Logs[attempt]
 
 	// Grow slice length if necessary
 	for j := len(tl.Logs); j <= i; j++ {
-		tl.Logs = append(tl.Logs, ExecutorLog{})
+		tl.Logs = append(tl.Logs, &ExecutorLog{})
 	}
 
 	return tl.Logs[i]
@@ -165,7 +156,7 @@ func GetExecLog(task *Task, attempt int, i int) ExecutorLog {
 
 // GetPageSize takes in the page size from a request and returns a new page size
 // taking into account the minimum, maximum and default as documented in the TES spec.
-func GetPageSize(reqSize uint32) int {
+func GetPageSize(reqSize int32) int {
 	// default page size
 	var pageSize = 256
 

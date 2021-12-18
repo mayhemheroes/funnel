@@ -120,16 +120,16 @@ func (taskBolt *BoltDB) GetTask(ctx context.Context, req *tes.GetTaskRequest) (*
 	return task, err
 }
 
-func getTaskView(tx *bolt.Tx, id string, view tes.TaskView) (*tes.Task, error) {
+func getTaskView(tx *bolt.Tx, id string, view tes.View) (*tes.Task, error) {
 	var err error
 	task := &tes.Task{}
 
 	switch {
-	case view == tes.TaskView_MINIMAL:
+	case view == tes.View_MINIMAL:
 		err = loadMinimalTaskView(tx, id, task)
-	case view == tes.TaskView_BASIC:
+	case view == tes.View_BASIC:
 		err = loadBasicTaskView(tx, id, task)
-	case view == tes.TaskView_FULL:
+	case view == tes.View_FULL:
 		err = loadFullTaskView(tx, id, task)
 	default:
 		err = fmt.Errorf("Unknown view: %s", view)
@@ -142,8 +142,8 @@ func (taskBolt *BoltDB) ListTasks(ctx context.Context, req *tes.ListTasksRequest
 	var tasks []*tes.Task
 	// If the tags filter request is non-nil we need the basic or full view
 	view := req.View
-	if req.View == tes.Minimal && req.Tags != nil {
-		view = tes.Basic
+	if req.View == tes.View_MINIMAL.String() && req.Tags != nil {
+		view = tes.View_BASIC.String()
 	}
 	pageSize := tes.GetPageSize(req.GetPageSize())
 

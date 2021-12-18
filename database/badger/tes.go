@@ -23,9 +23,9 @@ func (db *Badger) GetTask(ctx context.Context, req *tes.GetTaskRequest) (*tes.Ta
 	}
 
 	switch req.View {
-	case tes.Minimal:
+	case tes.View_MINIMAL.String():
 		task = task.GetMinimalView()
-	case tes.Basic:
+	case tes.View_BASIC.String():
 		task = task.GetBasicView()
 	}
 	return task, nil
@@ -34,7 +34,7 @@ func (db *Badger) GetTask(ctx context.Context, req *tes.GetTaskRequest) (*tes.Ta
 // ListTasks returns a list of tasks.
 func (db *Badger) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*tes.ListTasksResponse, error) {
 	var tasks []*tes.Task
-	pageSize := tes.GetPageSize(req.GetPageSize())
+	pageSize := tes.GetPageSize(int32(req.GetPageSize()))
 
 	err := db.db.View(func(txn *badger.Txn) error {
 
@@ -90,9 +90,9 @@ func (db *Badger) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*te
 			//}
 
 			switch req.View {
-			case tes.Minimal:
+			case tes.View_MINIMAL.String():
 				task = task.GetMinimalView()
-			case tes.Basic:
+			case tes.View_BASIC.String():
 				task = task.GetBasicView()
 			}
 

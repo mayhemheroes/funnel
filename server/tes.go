@@ -71,13 +71,13 @@ func (ts *TaskService) ListTasks(ctx context.Context, req *tes.ListTasksRequest)
 // CancelTask cancels a task
 func (ts *TaskService) CancelTask(ctx context.Context, req *tes.CancelTaskRequest) (*tes.CancelTaskResponse, error) {
 	// dispatch to compute backend
-	err := ts.Compute.WriteEvent(ctx, events.NewState(req.Id, tes.Canceled))
+	err := ts.Compute.WriteEvent(ctx, events.NewState(req.Id, tes.State_CANCELED))
 	if err != nil {
 		ts.Log.Error("compute backend failed to cancel task", "taskID", req.Id, "error", err)
 	}
 
 	// updated database and other event streams
-	err = ts.Event.WriteEvent(ctx, events.NewState(req.Id, tes.Canceled))
+	err = ts.Event.WriteEvent(ctx, events.NewState(req.Id, tes.State_CANCELED))
 	if err == tes.ErrNotFound {
 		err = grpc.Errorf(codes.NotFound, fmt.Sprintf("%v: taskID: %s", err.Error(), req.Id))
 	}
@@ -85,7 +85,7 @@ func (ts *TaskService) CancelTask(ctx context.Context, req *tes.CancelTaskReques
 }
 
 // GetServiceInfo returns service metadata.
-func (ts *TaskService) GetServiceInfo(ctx context.Context, info *tes.ServiceInfoRequest) (*tes.ServiceInfo, error) {
+func (ts *TaskService) GetServiceInfo(ctx context.Context, info *tes.GetServiceInfoRequest) (*tes.ServiceInfo, error) {
 	resp := &tes.ServiceInfo{
 		Name: ts.Name,
 		Doc:  version.String(),

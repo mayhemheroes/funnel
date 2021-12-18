@@ -213,7 +213,7 @@ func unmarshalTask(z *tes.Task, props datastore.PropertyList) error {
 	z.Tags = unmarshalMap(c.Tags)
 	if c.Resources != nil {
 		z.Resources = &tes.Resources{
-			CpuCores:    uint32(c.Resources.CpuCores),
+			CpuCores:    int32(c.Resources.CpuCores),
 			RamGb:       c.Resources.RamGb,
 			DiskGb:      c.Resources.DiskGb,
 			Preemptible: c.Resources.Preemptible,
@@ -267,11 +267,11 @@ func unmarshalPart(t *tes.Task, props datastore.PropertyList) error {
 	case contentPart:
 		t.Inputs[e.Index].Content = e.Content
 	case sysLogsPart:
-		t.GetTaskLog(e.Attempt).SystemLogs = e.SystemLogs
+		t.GetLogs()[e.Attempt].SystemLogs = e.SystemLogs
 	case stdoutPart:
-		t.GetExecLog(e.Attempt, e.Index).Stdout = e.Stdout
+		t.GetLogs()[e.Attempt].Logs[e.Index].Stdout = e.Stdout
 	case stderrPart:
-		t.GetExecLog(e.Attempt, e.Index).Stderr = e.Stderr
+		t.GetLogs()[e.Attempt].Logs[e.Index].Stderr = e.Stderr
 	}
 	return nil
 }

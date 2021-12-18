@@ -34,7 +34,7 @@ func init() {
 }
 
 // ParseString calls shellquote.Split(s) and passes those args to Parse().
-func ParseString(s string) ([]*tes.TesTask, error) {
+func ParseString(s string) ([]*tes.Task, error) {
 	args, err := shellquote.Split(s)
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func ParseString(s string) ([]*tes.TesTask, error) {
 }
 
 // Parse task a list of CLI args/flags, and converts them to tasks.
-func Parse(args []string) ([]*tes.TesTask, error) {
+func Parse(args []string) ([]*tes.Task, error) {
 
 	vals := flagVals{}
 	err := parseTopLevelArgs(&vals, args)
@@ -52,7 +52,7 @@ func Parse(args []string) ([]*tes.TesTask, error) {
 	}
 
 	// Scatter all vals into tasks
-	tasks := []*tes.TesTask{}
+	tasks := []*tes.Task{}
 	for _, v := range scatter(vals) {
 		// Parse inputs, outputs, environ, and tags from flagVals
 		// and update the task.

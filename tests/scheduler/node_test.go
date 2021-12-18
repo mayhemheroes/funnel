@@ -351,9 +351,9 @@ func TestNodeDrain(t *testing.T) {
 	}
 
 	// One last check to ensure the second task wasn't scheduled.
-	srv.GetView(first, tes.Minimal)
+	srv.GetView(first, tes.View_MINIMAL)
 
-	if srv.GetView(second, tes.Minimal).State != tes.State_QUEUED {
+	if srv.GetView(second, tes.View_MINIMAL).State != tes.State_QUEUED {
 		t.Fatal("expected second task to be queued")
 	}
 }

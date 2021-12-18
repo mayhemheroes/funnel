@@ -22,10 +22,10 @@ func FlattenInputs(ctx context.Context, inputs []*tes.Input, store storage.Stora
 	for _, input := range inputs {
 		switch input.Type {
 
-		case tes.File:
+		case tes.FileType_FILE:
 			flat = append(flat, input)
 
-		case tes.Directory:
+		case tes.FileType_DIRECTORY:
 			list, err := store.List(ctx, input.Url)
 			if err != nil {
 				return nil, fmt.Errorf("listing directory: %s", err)
@@ -87,10 +87,10 @@ func FlattenOutputs(ctx context.Context, outputs []*tes.Output, store storage.St
 	var flat []*tes.Output
 	for _, output := range outputs {
 		switch output.Type {
-		case tes.File:
+		case tes.FileType_FILE:
 			flat = append(flat, output)
 
-		case tes.Directory:
+		case tes.FileType_DIRECTORY:
 			list, err := fsutil.WalkFiles(output.Path)
 			if err != nil {
 				return nil, fmt.Errorf("walking directory: %s", err)

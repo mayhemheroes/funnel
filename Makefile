@@ -58,6 +58,10 @@ proto:
 		--go-grpc_out ./ \
 		events.proto
 
+
+proto-depends:
+	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
 openapi:
 	@rm -rf tes/openapi
 	@java -jar openapi-generator-cli.jar generate \

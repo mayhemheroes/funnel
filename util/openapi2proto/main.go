@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
 	"sort"
 	"strings"
 	"text/template"
@@ -11,10 +13,11 @@ import (
 )
 
 type Field struct {
-	Name   string
-	Type   string
-	Id     int
-	Source *openapi3.SchemaRef
+	Name     string
+	Type     string
+	Repeated bool
+	Id       int
+	Source   *openapi3.SchemaRef
 }
 
 type Message struct {
@@ -27,44 +30,62 @@ type Enum struct {
 	Values []interface{}
 }
 
-func getType(p *openapi3.SchemaRef) string {
+func getType(p *openapi3.SchemaRef) (bool, string) {
 	switch p.Value.Type {
 	case "integer":
-		return "int32"
+		return false, "int32"
 	case "boolean":
-		return "bool"
+		return false, "bool"
 	case "number":
-		return "double"
+		return false, "double"
 	case "object":
 		if p.Ref != "" {
 			t := strings.Split(p.Ref, "/")
-			return t[len(t)-1]
+			return false, t[len(t)-1]
 		}
 		if p.Value.AdditionalProperties != nil {
-			return fmt.Sprintf("map<string,%s>", getType(p.Value.AdditionalProperties))
+			_, aType := getType(p.Value.AdditionalProperties)
+			return false, fmt.Sprintf("map<string,%s>", aType)
 		}
-		return fmt.Sprintf("map<string,string>")
+		return false, fmt.Sprintf("map<string,string>")
 		//return fmt.Sprintf("%#v", p.Value)
 	case "array":
 		if p.Value.Items.Ref != "" {
 			t := strings.Split(p.Value.Items.Ref, "/")
-			return "repeated " + t[len(t)-1]
+			return true, t[len(t)-1]
 		}
-		return "repeated " + getType(p.Value.Items)
+		_, aType := getType(p.Value.Items)
+		return true, aType
 	default:
 		if p.Ref != "" {
 			t := strings.Split(p.Ref, "/")
-			return t[len(t)-1]
+			return false, t[len(t)-1]
 		}
-		return p.Value.Type
+		return false, p.Value.Type
 	}
+}
+
+func getParamType(param *openapi3.Parameter) (bool, string) {
+	log.Printf("Param %#v\n", param)
+
+	if param.Schema.Ref != "" {
+		t := strings.Split(param.Schema.Ref, "/")
+		return false, t[len(t)-1]
+	}
+
+	if param.Schema.Value.Type != "" {
+		return getType(param.Schema)
+	}
+	return false, ""
+
 }
 
 func getFields(schema *openapi3.SchemaRef) []Field {
 	fields := []Field{}
 	for pname, pschema := range schema.Value.Properties {
 		//	fmt.Printf("\t%s %#v\n", pname, pschema)
-		f := Field{Name: pname, Type: getType(pschema), Source: schema}
+		repeated, fType := getType(pschema)
+		f := Field{Name: pname, Repeated: repeated, Type: fType, Source: schema}
 		fields = append(fields, f)
 	}
 	sort.SliceStable(fields, func(i, j int) bool { return fields[i].Name < fields[j].Name })
@@ -121,6 +142,23 @@ func parseMessageEnum(name string, schema *openapi3.SchemaRef) (Enum, error) {
 	return e, nil
 }
 
+func cleanSchema(messages []Message, enums []Enum) {
+	sort.SliceStable(messages, func(i, j int) bool { return messages[i].Name < messages[j].Name })
+
+	var prefixRemove = "tes"
+	for i := range messages {
+		messages[i].Name = strings.TrimPrefix(messages[i].Name, prefixRemove)
+		for j := range messages[i].Fields {
+			messages[i].Fields[j].Type = strings.TrimPrefix(messages[i].Fields[j].Type, prefixRemove)
+		}
+	}
+
+	for i := range enums {
+		enums[i].Name = strings.TrimPrefix(enums[i].Name, prefixRemove)
+	}
+
+}
+
 func main() {
 	flag.Parse()
 
@@ -135,7 +173,7 @@ func main() {
 	enums := []Enum{}
 
 	if err != nil {
-		fmt.Printf("Parsing Error: %s\n", err)
+		log.Printf("Parsing Error: %s\n", err)
 	} else {
 		//fmt.Printf("%#v\n", doc.Components.Parameters)
 		for name, schema := range doc.Components.Schemas {
@@ -150,28 +188,46 @@ func main() {
 			}
 		}
 
+		for name, param := range doc.Components.Parameters {
+			//fmt.Printf("component params: %s %#v\n", name, param.Value.Schema.Value)
+			if param.Value.Schema.Value.Enum != nil {
+				if e, err := parseMessageEnum(name, param.Value.Schema); err == nil {
+					//fmt.Printf("param %s %#v\n", name, e)
+					enums = append(enums, e)
+				}
+			}
+		}
+
 		for path, req := range doc.Paths {
 			if req.Get != nil {
+				log.Printf("Get: %s %s\n", path, req.Get.OperationID)
+				reqFields := []Field{}
 				for _, param := range req.Get.Parameters {
-					if param.Value.Schema.Value.Enum != nil {
-						if m, err := parseMessageEnum(param.Value.Name, param.Value.Schema); err == nil {
-							fmt.Printf("enum: %#v\n", m)
-						} else {
-							fmt.Printf("%s %#v\n", path, param.Value.Schema.Value)
-						}
-					} else {
-						if m, err := parseMessageSchema(param.Value.Name, param.Value.Schema); err == nil {
-							fmt.Printf("message: %#v\n", m)
-						} else {
-							fmt.Printf("%s %#v\n", path, param.Value.Schema.Value)
-						}
-					}
+					r, t := getParamType(param.Value)
+					reqFields = append(reqFields, Field{Name: param.Value.Name, Type: t, Repeated: r})
 				}
+				for i := range reqFields {
+					reqFields[i].Id = i + 1
+				}
+				m := Message{Name: req.Get.OperationID + "Request", Fields: reqFields}
+				messages = append(messages, m)
+			} else if req.Post != nil {
+				log.Printf("Post: %s %s\n", path, req.Post.OperationID)
+				reqFields := []Field{}
+				for _, param := range req.Post.Parameters {
+					r, t := getParamType(param.Value)
+					reqFields = append(reqFields, Field{Name: param.Value.Name, Type: t, Repeated: r})
+				}
+				for i := range reqFields {
+					reqFields[i].Id = i + 1
+				}
+				m := Message{Name: req.Post.OperationID + "Request", Fields: reqFields}
+				messages = append(messages, m)
 			}
 		}
 	}
 
-	sort.SliceStable(messages, func(i, j int) bool { return messages[i].Name < messages[j].Name })
+	cleanSchema(messages, enums)
 
 	tmpl, err := template.New("proto").Parse(`
 syntax = "proto3";
@@ -187,7 +243,7 @@ enum {{$enum.Name}} { {{range $j, $value := $enum.Values}}
 {{end}}
 {{range $i, $message := .messages}}
 message {{$message.Name}} { {{range $j, $field := $message.Fields}}
-	{{$field.Type}} {{$field.Name}} = {{$field.Id}};{{end}}
+	{{if $field.Repeated}}repeated {{end}}{{$field.Type}} {{$field.Name}} = {{$field.Id}};{{end}}
 }
 {{end}}
 
@@ -197,6 +253,6 @@ message {{$message.Name}} { {{range $j, $field := $message.Fields}}
 	if err != nil {
 		fmt.Printf("Template Error: %s\n", err)
 	} else {
-		//tmpl.Execute(os.Stdout, map[string]interface{}{"messages": messages, "enums": enums})
+		tmpl.Execute(os.Stdout, map[string]interface{}{"messages": messages, "enums": enums})
 	}
 }

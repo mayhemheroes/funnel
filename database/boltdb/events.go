@@ -9,20 +9,6 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/tes"
-	"github.com/ohsu-comp-bio/funnel/tes/tesproto"
-)
-
-// State variables for convenience
-const (
-	Unknown       = tes.State_UNKNOWN
-	Queued        = tes.State_QUEUED
-	Running       = tes.State_RUNNING
-	Paused        = tes.State_PAUSED
-	Complete      = tes.State_COMPLETE
-	ExecutorError = tes.State_EXECUTOR_ERROR
-	SystemError   = tes.State_SYSTEM_ERROR
-	Canceled      = tes.State_CANCELED
-	Initializing  = tes.State_INITIALIZING
 )
 
 // WriteEvent creates an event for the server to handle.
@@ -38,7 +24,7 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 		}
 		err = taskBolt.db.Update(func(tx *bolt.Tx) error {
 			tx.Bucket(TaskBucket).Put(idBytes, taskString)
-			tx.Bucket(TaskState).Put(idBytes, []byte(tes.State_QUEUED))
+			tx.Bucket(TaskState).Put(idBytes, []byte(tes.State_QUEUED.String()))
 			return nil
 		})
 		if err != nil {
@@ -53,15 +39,15 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 
 	// Check that the task exists
 	err = taskBolt.db.View(func(tx *bolt.Tx) error {
-		_, err := getTaskView(tx, req.Id, tes.TaskView_MINIMAL)
+		_, err := getTaskView(tx, req.Id, tes.View_MINIMAL)
 		return err
 	})
 	if err != nil {
 		return err
 	}
 
-	tl := &tesproto.TesTaskLog{}
-	el := &tesproto.TesExecutorLog{}
+	tl := &tes.TaskLog{}
+	el := &tes.ExecutorLog{}
 
 	switch req.Type {
 	case events.Type_TASK_STATE:
@@ -152,7 +138,7 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 	return err
 }
 
-func transitionTaskState(tx *bolt.Tx, id string, target tesproto.TesState) error {
+func transitionTaskState(tx *bolt.Tx, id string, target tes.State) error {
 	idBytes := []byte(id)
 	current := getTaskState(tx, id)
 
@@ -170,20 +156,20 @@ func transitionTaskState(tx *bolt.Tx, id string, target tesproto.TesState) error
 		// Error when trying to switch out of a terminal state to a non-terminal one.
 		return fmt.Errorf("Unexpected transition from %s to %s", current, target)
 
-	case target == Queued:
+	case target == tes.State_QUEUED:
 		return fmt.Errorf("Can't transition to Queued state")
 	}
 
 	switch target {
-	case Unknown, Paused:
+	case tes.State_UNKNOWN, tes.State_PAUSED:
 		return fmt.Errorf("Unimplemented task state %s", target)
 
-	case Canceled, Complete, ExecutorError, SystemError:
+	case tes.State_CANCELED, tes.State_COMPLETE, tes.State_EXECUTOR_ERROR, tes.State_SYSTEM_ERROR:
 		// Remove from queue
 		tx.Bucket(TasksQueued).Delete(idBytes)
 
-	case Running, Initializing:
-		if current != Unknown && current != Queued && current != Initializing {
+	case tes.State_RUNNING, tes.State_INITIALIZING:
+		if current != tes.State_UNKNOWN && current != tes.State_QUEUED && current != tes.State_INITIALIZING {
 			return fmt.Errorf("Unexpected transition from %s to %s", current, target)
 		}
 		tx.Bucket(TasksQueued).Delete(idBytes)
@@ -192,12 +178,12 @@ func transitionTaskState(tx *bolt.Tx, id string, target tesproto.TesState) error
 		return fmt.Errorf("Unknown target state: %s", target)
 	}
 
-	tx.Bucket(TaskState).Put(idBytes, []byte(target))
+	tx.Bucket(TaskState).Put(idBytes, []byte(target.String()))
 	return nil
 }
 
-func updateTaskLogs(tx *bolt.Tx, id string, tl *tesproto.TesTaskLog) error {
-	tasklog := &tesproto.TesTaskLog{}
+func updateTaskLogs(tx *bolt.Tx, id string, tl *tes.TaskLog) error {
+	tasklog := &tes.TaskLog{}
 
 	// Try to load existing task log
 	b := tx.Bucket(TasksLog).Get([]byte(id))
@@ -236,12 +222,12 @@ func updateTaskLogs(tx *bolt.Tx, id string, tl *tesproto.TesTaskLog) error {
 	return tx.Bucket(TasksLog).Put([]byte(id), logbytes)
 }
 
-func updateExecutorLogs(tx *bolt.Tx, id string, el *tesproto.TesExecutorLog) error {
+func updateExecutorLogs(tx *bolt.Tx, id string, el *tes.ExecutorLog) error {
 	// Check if there is an existing task log
 	o := tx.Bucket(ExecutorLogs).Get([]byte(id))
 	if o != nil {
 		// There is an existing log in the DB, load it
-		existing := &tesproto.TesExecutorLog{}
+		existing := &tes.ExecutorLog{}
 		err := proto.Unmarshal(o, existing)
 		if err != nil {
 			return err

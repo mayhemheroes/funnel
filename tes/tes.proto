@@ -6,7 +6,7 @@ option go_package = "github.com/ohsu-comp-bio/funnel/tes";
 package tes;
 
 
-enum tesState { 
+enum State { 
 	UNKNOWN = 0;
 	QUEUED = 1;
 	INITIALIZING = 2;
@@ -18,20 +18,47 @@ enum tesState {
 	CANCELED = 8;
 }
 
-enum tesFileType { 
+enum FileType { 
 	FILE = 0;
 	DIRECTORY = 1;
 }
 
-
-message tesCancelTaskResponse { 
+enum view { 
+	MINIMAL = 0;
+	BASIC = 1;
+	FULL = 2;
 }
 
-message tesCreateTaskResponse { 
+
+message CancelTaskRequest { 
 	string id = 1;
 }
 
-message tesExecutor { 
+message GetServiceInfoRequest { 
+}
+
+message GetTaskRequest { 
+	string id = 1;
+	string view = 2;
+}
+
+message ListTasksRequest { 
+	string name_prefix = 1;
+	State state = 2;
+	map<string,string> tags = 3;
+	int32 page_size = 4;
+	string page_token = 5;
+	string view = 6;
+}
+
+message CancelTaskResponse { 
+}
+
+message CreateTaskResponse { 
+	string id = 1;
+}
+
+message Executor { 
 	repeated string command = 1;
 	map<string,string> env = 2;
 	string image = 3;
@@ -41,7 +68,7 @@ message tesExecutor {
 	string workdir = 7;
 }
 
-message tesExecutorLog { 
+message ExecutorLog { 
 	string end_time = 1;
 	int32 exit_code = 2;
 	string start_time = 3;
@@ -49,35 +76,35 @@ message tesExecutorLog {
 	string stdout = 5;
 }
 
-message tesInput { 
+message Input { 
 	string content = 1;
 	string description = 2;
 	string name = 3;
 	string path = 4;
-	tesFileType type = 5;
+	FileType type = 5;
 	string url = 6;
 }
 
-message tesListTasksResponse { 
+message ListTasksResponse { 
 	string next_page_token = 1;
-	repeated tesTask tasks = 2;
+	repeated Task tasks = 2;
 }
 
-message tesOutput { 
+message Output { 
 	string description = 1;
 	string name = 2;
 	string path = 3;
-	tesFileType type = 4;
+	FileType type = 4;
 	string url = 5;
 }
 
-message tesOutputFileLog { 
+message OutputFileLog { 
 	string path = 1;
 	string size_bytes = 2;
 	string url = 3;
 }
 
-message tesResources { 
+message Resources { 
 	map<string,string> backend_parameters = 1;
 	bool backend_parameters_strict = 2;
 	int32 cpu_cores = 3;
@@ -87,7 +114,7 @@ message tesResources {
 	repeated string zones = 7;
 }
 
-message tesServiceInfo { 
+message ServiceInfo { 
 	string contactUrl = 1;
 	string createdAt = 2;
 	string description = 3;
@@ -98,37 +125,37 @@ message tesServiceInfo {
 	map<string,string> organization = 8;
 	repeated string storage = 9;
 	repeated string tesResources_backend_parameters = 10;
-	tesServiceType type = 11;
+	ServiceType type = 11;
 	string updatedAt = 12;
 	string version = 13;
 }
 
-message tesServiceType { 
+message ServiceType { 
 	string artifact = 1;
 	string group = 2;
 	string version = 3;
 }
 
-message tesTask { 
+message Task { 
 	string creation_time = 1;
 	string description = 2;
-	repeated tesExecutor executors = 3;
+	repeated Executor executors = 3;
 	string id = 4;
-	repeated tesInput inputs = 5;
-	repeated tesTaskLog logs = 6;
+	repeated Input inputs = 5;
+	repeated TaskLog logs = 6;
 	string name = 7;
-	repeated tesOutput outputs = 8;
-	tesResources resources = 9;
-	tesState state = 10;
+	repeated Output outputs = 8;
+	Resources resources = 9;
+	State state = 10;
 	map<string,string> tags = 11;
 	repeated string volumes = 12;
 }
 
-message tesTaskLog { 
+message TaskLog { 
 	string end_time = 1;
-	repeated tesExecutorLog logs = 2;
+	repeated ExecutorLog logs = 2;
 	map<string,string> metadata = 3;
-	repeated tesOutputFileLog outputs = 4;
+	repeated OutputFileLog outputs = 4;
 	string start_time = 5;
 	repeated string system_logs = 6;
 }

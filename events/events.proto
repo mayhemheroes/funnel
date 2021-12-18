@@ -10,7 +10,7 @@ message Metadata {
 }
 
 message Outputs {
-  repeated tes.tesOutputFileLog value = 1;
+  repeated tes.OutputFileLog value = 1;
 }
 
 message SystemLog {
@@ -39,7 +39,7 @@ message Event {
   string id = 1;
   string timestamp = 2;
   oneof data {
-    tes.tesState state = 3;
+    tes.State state = 3;
     string start_time = 4;
     string end_time = 5;
     Outputs outputs = 6;
@@ -48,7 +48,7 @@ message Event {
     string stdout = 13;
     string stderr = 14;
     SystemLog system_log = 15;
-    tes.tesTask task = 19;
+    tes.Task task = 19;
   }
   uint32 attempt = 16;
   uint32 index = 17;

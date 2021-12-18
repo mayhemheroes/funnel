@@ -57,7 +57,7 @@ type Client struct {
 }
 
 // GetTask returns the raw bytes from GET /v1/tasks/{id}
-func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*TesTask, error) {
+func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*Task, error) {
 	// Send request
 	u := c.address + "/v1/tasks/" + req.Id + "?view=" + string(req.View)
 	hreq, _ := http.NewRequest("GET", u, nil)
@@ -80,7 +80,7 @@ func (c *Client) GetTask(ctx context.Context, req *GetTaskRequest) (*TesTask, er
 func (c *Client) ListTasks(ctx context.Context, req *ListTasksRequest) (*ListTasksResponse, error) {
 	// Build url query parameters
 	v := url.Values{}
-	addInt64(v, "page_size", req.PageSize)
+	addInt32(v, "page_size", req.PageSize)
 	addString(v, "page_token", req.PageToken)
 	addString(v, "view", string(req.View))
 
@@ -102,7 +102,7 @@ func (c *Client) ListTasks(ctx context.Context, req *ListTasksRequest) (*ListTas
 		return nil, err
 	}
 	// Parse response
-	resp := &TesListTasksResponse{}
+	resp := &ListTasksResponse{}
 	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (c *Client) ListTasks(ctx context.Context, req *ListTasksRequest) (*ListTas
 }
 
 // CreateTask POSTs a Task message to /v1/tasks
-func (c *Client) CreateTask(ctx context.Context, task *TesTask) (*TesCreateTaskResponse, error) {
+func (c *Client) CreateTask(ctx context.Context, task *Task) (*CreateTaskResponse, error) {
 	verr := Validate(task)
 	if verr != nil {
 		return nil, fmt.Errorf("invalid task message: %v", verr)
@@ -164,7 +164,7 @@ func (c *Client) CancelTask(ctx context.Context, req *CancelTaskRequest) (*Cance
 }
 
 // GetServiceInfo returns result of GET /v1/tasks/service-info
-func (c *Client) GetServiceInfo(ctx context.Context, req *ServiceInfoRequest) (*ServiceInfo, error) {
+func (c *Client) GetServiceInfo(ctx context.Context, req *GetServiceInfoRequest) (*ServiceInfo, error) {
 	u := c.address + "/v1/tasks/service-info"
 	hreq, _ := http.NewRequest("GET", u, nil)
 	hreq.WithContext(ctx)
@@ -191,7 +191,7 @@ func (c *Client) WaitForTask(ctx context.Context, taskIDs ...string) error {
 		for _, id := range taskIDs {
 			r, err := c.GetTask(ctx, &GetTaskRequest{
 				Id:   id,
-				View: TaskView_MINIMAL,
+				View: View_MINIMAL.String(),
 			})
 			if err != nil {
 				return err

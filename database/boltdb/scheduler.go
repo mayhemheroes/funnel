@@ -7,14 +7,13 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	"github.com/ohsu-comp-bio/funnel/compute/scheduler"
 	"github.com/ohsu-comp-bio/funnel/tes"
-	"github.com/ohsu-comp-bio/funnel/tes/tesproto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
 
 // queueTask adds a task to the scheduler queue.
-func (taskBolt *BoltDB) queueTask(task *tesproto.TesTask) error {
+func (taskBolt *BoltDB) queueTask(task *tes.Task) error {
 	taskID := task.Id
 	idBytes := []byte(taskID)
 
@@ -37,7 +36,7 @@ func (taskBolt *BoltDB) ReadQueue(n int) []*tes.Task {
 		c := tx.Bucket(TasksQueued).Cursor()
 		for k, _ := c.First(); k != nil && len(tasks) < n; k, _ = c.Next() {
 			id := string(k)
-			task, _ := getTaskView(tx, id, tes.TaskView_FULL)
+			task, _ := getTaskView(tx, id, tes.View_FULL)
 			tasks = append(tasks, task)
 		}
 		return nil

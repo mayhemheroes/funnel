@@ -55,7 +55,7 @@ func (b *Backend) WriteEvent(ctx context.Context, ev *events.Event) error {
 		return b.Submit(ev.GetTask())
 
 	case events.Type_TASK_STATE:
-		if ev.State == tes.State_CANCELED {
+		if ev.GetState() == tes.State_CANCELED {
 			return b.Cancel(ctx, ev.Id)
 		}
 	}
@@ -68,7 +68,7 @@ func (b *Backend) Close() {
 }
 
 // Submit submits a task to the AWS batch service.
-func (b *Backend) Submit(task *tes.TesTask) error {
+func (b *Backend) Submit(task *tes.Task) error {
 	ctx := context.Background()
 
 	req := &batch.SubmitJobInput{
@@ -119,7 +119,7 @@ func (b *Backend) Submit(task *tes.TesTask) error {
 // Cancel removes tasks from the AWS batch job queue.
 func (b *Backend) Cancel(ctx context.Context, taskID string) error {
 	task, err := b.database.GetTask(
-		ctx, &tes.GetTaskRequest{Id: taskID, View: tes.TaskView_BASIC},
+		ctx, &tes.GetTaskRequest{Id: taskID, View: tes.View_BASIC.String()},
 	)
 	if err != nil {
 		return err
@@ -172,7 +172,7 @@ ReconcileLoop:
 			for _, s := range states {
 				for {
 					lresp, err := b.database.ListTasks(ctx, &tes.ListTasksRequest{
-						View:      tes.TaskView_BASIC,
+						View:      tes.View_BASIC.String(),
 						State:     s,
 						PageSize:  100,
 						PageToken: pageToken,
@@ -213,7 +213,7 @@ ReconcileLoop:
 						jstate := *j.Status
 
 						if jstate == "FAILED" {
-							b.event.WriteEvent(ctx, events.NewState(task.Id, tes.SystemError))
+							b.event.WriteEvent(ctx, events.NewState(task.Id, tes.State_SYSTEM_ERROR))
 							b.event.WriteEvent(
 								ctx,
 								events.NewSystemLog(

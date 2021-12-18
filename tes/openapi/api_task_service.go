@@ -86,9 +86,9 @@ func (c *TaskServiceApiController) Routes() Routes {
 // CancelTask - CancelTask
 func (c *TaskServiceApiController) CancelTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	idParam := params["id"]
+	id := params["id"]
 	
-	result, err := c.service.CancelTask(r.Context(), idParam)
+	result, err := c.service.CancelTask(r.Context(), id)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -101,18 +101,18 @@ func (c *TaskServiceApiController) CancelTask(w http.ResponseWriter, r *http.Req
 
 // CreateTask - CreateTask
 func (c *TaskServiceApiController) CreateTask(w http.ResponseWriter, r *http.Request) {
-	bodyParam := TesTask{}
+	body := TesTask{}
 	d := json.NewDecoder(r.Body)
 	d.DisallowUnknownFields()
-	if err := d.Decode(&bodyParam); err != nil {
+	if err := d.Decode(&body); err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	if err := AssertTesTaskRequired(bodyParam); err != nil {
+	if err := AssertTesTaskRequired(body); err != nil {
 		c.errorHandler(w, r, err, nil)
 		return
 	}
-	result, err := c.service.CreateTask(r.Context(), bodyParam)
+	result, err := c.service.CreateTask(r.Context(), body)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -140,10 +140,10 @@ func (c *TaskServiceApiController) GetServiceInfo(w http.ResponseWriter, r *http
 func (c *TaskServiceApiController) GetTask(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	query := r.URL.Query()
-	idParam := params["id"]
+	id := params["id"]
 	
-	viewParam := query.Get("view")
-	result, err := c.service.GetTask(r.Context(), idParam, viewParam)
+	view := query.Get("view")
+	result, err := c.service.GetTask(r.Context(), id, view)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -157,17 +157,17 @@ func (c *TaskServiceApiController) GetTask(w http.ResponseWriter, r *http.Reques
 // ListTasks - ListTasks
 func (c *TaskServiceApiController) ListTasks(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	namePrefixParam := query.Get("name_prefix")
-	stateParam := query.Get("state")
-	tagsParam := query.Get("tags")
-	pageSizeParam, err := parseInt64Parameter(query.Get("page_size"), false)
+	namePrefix := query.Get("name_prefix")
+	state := query.Get("state")
+	tags := query.Get("tags")
+	pageSize, err := parseInt64Parameter(query.Get("page_size"), false)
 	if err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	pageTokenParam := query.Get("page_token")
-	viewParam := query.Get("view")
-	result, err := c.service.ListTasks(r.Context(), namePrefixParam, stateParam, tagsParam, pageSizeParam, pageTokenParam, viewParam)
+	pageToken := query.Get("page_token")
+	view := query.Get("view")
+	result, err := c.service.ListTasks(r.Context(), namePrefix, state, tags, pageSize, pageToken, view)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

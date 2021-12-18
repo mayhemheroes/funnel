@@ -26,7 +26,7 @@ func (db *MongoDB) WriteEvent(ctx context.Context, req *events.Event) error {
 		task := req.GetTask()
 		task.Logs = []*tes.TaskLog{
 			{
-				Logs: []tes.ExecutorLog{},
+				Logs: []*tes.ExecutorLog{},
 			},
 		}
 		return tasks.Insert(&task)

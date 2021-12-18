@@ -73,17 +73,17 @@ func (db *Badger) writeEvent(ctx context.Context, req *events.Event) error {
 			task.State = to
 
 		case events.Type_TASK_START_TIME:
-			task.GetTaskLog(0).StartTime = req.GetStartTime()
+			task.GetLogs()[0].StartTime = req.GetStartTime()
 
 		case events.Type_TASK_END_TIME:
-			task.GetTaskLog(0).EndTime = req.GetEndTime()
+			task.GetLogs()[0].EndTime = req.GetEndTime()
 
 		case events.Type_TASK_OUTPUTS:
-			task.GetTaskLog(0).Outputs = req.GetOutputs().Value
+			task.GetLogs()[0].Outputs = req.GetOutputs().Value
 
 		case events.Type_TASK_METADATA:
 			meta := req.GetMetadata().Value
-			tl := task.GetTaskLog(0)
+			tl := task.GetLogs()[0]
 			if tl.Metadata == nil {
 				tl.Metadata = map[string]string{}
 			}
@@ -92,22 +92,22 @@ func (db *Badger) writeEvent(ctx context.Context, req *events.Event) error {
 			}
 
 		case events.Type_EXECUTOR_START_TIME:
-			task.GetExecLog(0, int(req.Index)).StartTime = req.GetStartTime()
+			task.GetLogs()[0].Logs[req.Index].StartTime = req.GetStartTime()
 
 		case events.Type_EXECUTOR_END_TIME:
-			task.GetExecLog(0, int(req.Index)).EndTime = req.GetEndTime()
+			task.GetLogs()[0].Logs[req.Index].EndTime = req.GetEndTime()
 
 		case events.Type_EXECUTOR_EXIT_CODE:
-			task.GetExecLog(0, int(req.Index)).ExitCode = req.GetExitCode()
+			task.GetLogs()[0].Logs[req.Index].ExitCode = req.GetExitCode()
 
 		case events.Type_EXECUTOR_STDOUT:
-			task.GetExecLog(0, int(req.Index)).Stdout = req.GetStdout()
+			task.GetLogs()[0].Logs[req.Index].Stdout = req.GetStdout()
 
 		case events.Type_EXECUTOR_STDERR:
-			task.GetExecLog(0, int(req.Index)).Stderr = req.GetStderr()
+			task.GetLogs()[0].Logs[req.Index].Stderr = req.GetStderr()
 
 		case events.Type_SYSTEM_LOG:
-			tl := task.GetTaskLog(0)
+			tl := task.GetLogs()[0]
 			tl.SystemLogs = append(tl.SystemLogs, req.SysLogString())
 		}
 

@@ -27,39 +27,39 @@ func (tb TaskBuilder) WriteEvent(ctx context.Context, ev *Event) error {
 		t.State = to
 
 	case Type_SYSTEM_LOG:
-		t.GetTaskLog(attempt).SystemLogs = append(t.GetTaskLog(attempt).SystemLogs, ev.SysLogString())
+		t.GetLogs()[attempt].SystemLogs = append(t.GetLogs()[attempt].SystemLogs, ev.SysLogString())
 
 	case Type_TASK_START_TIME:
-		t.GetTaskLog(attempt).StartTime = ev.GetStartTime()
+		t.GetLogs()[attempt].StartTime = ev.GetStartTime()
 
 	case Type_TASK_END_TIME:
-		t.GetTaskLog(attempt).EndTime = ev.GetEndTime()
+		t.GetLogs()[attempt].EndTime = ev.GetEndTime()
 
 	case Type_TASK_OUTPUTS:
-		t.GetTaskLog(attempt).Outputs = ev.GetOutputs().Value
+		t.GetLogs()[attempt].Outputs = ev.GetOutputs().Value
 
 	case Type_TASK_METADATA:
-		if t.GetTaskLog(attempt).Metadata == nil {
-			t.GetTaskLog(attempt).Metadata = map[string]string{}
+		if t.GetLogs()[attempt].Metadata == nil {
+			t.GetLogs()[attempt].Metadata = map[string]string{}
 		}
 		for k, v := range ev.GetMetadata().Value {
-			t.GetTaskLog(attempt).Metadata[k] = v
+			t.GetLogs()[attempt].Metadata[k] = v
 		}
 
 	case Type_EXECUTOR_START_TIME:
-		t.GetExecLog(attempt, index).StartTime = ev.GetStartTime()
+		t.GetLogs()[attempt].Logs[index].StartTime = ev.GetStartTime()
 
 	case Type_EXECUTOR_END_TIME:
-		t.GetExecLog(attempt, index).EndTime = ev.GetEndTime()
+		t.GetLogs()[attempt].Logs[index].EndTime = ev.GetEndTime()
 
 	case Type_EXECUTOR_EXIT_CODE:
-		t.GetExecLog(attempt, index).ExitCode = ev.GetExitCode()
+		t.GetLogs()[attempt].Logs[index].ExitCode = ev.GetExitCode()
 
 	case Type_EXECUTOR_STDOUT:
-		t.GetExecLog(attempt, index).Stdout = ev.GetStdout()
+		t.GetLogs()[attempt].Logs[index].Stdout = ev.GetStdout()
 
 	case Type_EXECUTOR_STDERR:
-		t.GetExecLog(attempt, index).Stderr = ev.GetStderr()
+		t.GetLogs()[attempt].Logs[index].Stderr = ev.GetStderr()
 	}
 
 	return nil

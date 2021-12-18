@@ -64,7 +64,7 @@ func TestAmazonS3Storage(t *testing.T) {
 	dPath := "testdata/test_dir"
 	inDirURL := protocol + testBucket + "/" + dPath
 	_, err = worker.UploadOutputs(ctx, []*tes.Output{
-		{Url: inDirURL, Path: dPath, Type: tes.Directory},
+		{Url: inDirURL, Path: dPath, Type: tes.FileType_DIRECTORY},
 	}, store, ev, parallelXfer)
 	if err != nil {
 		t.Fatal("error uploading test directory:", err)
@@ -77,7 +77,7 @@ func TestAmazonS3Storage(t *testing.T) {
 	// Task definition which will test downloading/uploading the inputs/outputs.
 	task := &tes.Task{
 		Name: "storage e2e",
-		Inputs: []tes.Input{
+		Inputs: []*tes.Input{
 			{
 				Url:  inFileURL,
 				Path: "/opt/inputs/test-file.txt",
@@ -89,7 +89,7 @@ func TestAmazonS3Storage(t *testing.T) {
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Outputs: []tes.Output{
+		Outputs: []*tes.Output{
 			{
 				Path: "/opt/workdir/test-output-file.txt",
 				Url:  outFileURL,
@@ -101,7 +101,7 @@ func TestAmazonS3Storage(t *testing.T) {
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Executors: []tes.Executor{
+		Executors: []*tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{
@@ -148,7 +148,7 @@ func TestAmazonS3Storage(t *testing.T) {
 	}
 
 	err = worker.DownloadInputs(ctx, []*tes.Input{
-		{Url: outDirURL, Path: "./test_tmp/test-s3-directory", Type: tes.Directory},
+		{Url: outDirURL, Path: "./test_tmp/test-s3-directory", Type: tes.FileType_DIRECTORY},
 	}, store, ev, parallelXfer)
 	if err != nil {
 		t.Fatal("Failed to download directory:", err)
@@ -170,21 +170,21 @@ func TestAmazonS3Storage(t *testing.T) {
 	// does not exist
 	task = &tes.Task{
 		Name: "storage e2e",
-		Inputs: []tes.Input{
+		Inputs: []*tes.Input{
 			{
 				Url:  protocol + testBucket + "/this/path/does/not/exist",
 				Path: "/opt/inputs/test-directory",
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Outputs: []tes.Output{
+		Outputs: []*tes.Output{
 			{
 				Path: "/opt/workdir/this/path/does/not/exist/test-output-directory",
 				Url:  outDirURL,
 				Type: tes.FileType_DIRECTORY,
 			},
 		},
-		Executors: []tes.Executor{
+		Executors: []*tes.Executor{
 			{
 				Image: "alpine:latest",
 				Command: []string{
