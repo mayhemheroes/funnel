@@ -23,10 +23,10 @@ import (
 // RPC traffic via gRPC, HTTP traffic for the TES API,
 // and also serves the web dashboard.
 type Server struct {
-	RPCAddress       string
-	HTTPPort         string
-	BasicAuth        []config.BasicCredential
-	Tasks            tes.TaskServiceServer
+	RPCAddress string
+	HTTPPort   string
+	BasicAuth  []config.BasicCredential
+	//Tasks            tes.TaskServiceServer
 	Events           events.EventServiceServer
 	Nodes            scheduler.SchedulerServiceServer
 	DisableHTTPCache bool

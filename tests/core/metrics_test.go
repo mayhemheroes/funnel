@@ -34,7 +34,7 @@ func TestMetrics(t *testing.T) {
 	fun.Wait(id3)
 
 	bg := context.Background()
-	resp, err := fun.HTTP.GetServiceInfo(bg, &tes.ServiceInfoRequest{})
+	resp, err := fun.HTTP.GetServiceInfo(bg, &tes.GetServiceInfoRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
