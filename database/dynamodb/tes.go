@@ -73,7 +73,7 @@ func (db *DynamoDB) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*
 		filterParts = append(filterParts, "#state = :stateFilter")
 	}
 
-	for k, v := range req.Tags {
+	for k, v := range req.GetTags() {
 		tmpl := "tags.%s = :%sFilter"
 		filterParts = append(filterParts, fmt.Sprintf(tmpl, k, k))
 		if v == "" {

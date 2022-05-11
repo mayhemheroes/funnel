@@ -13,7 +13,7 @@ import (
 )
 
 // WriteEvent creates an event for the server to handle.
-func (db *Badger) WriteEvent(ctx context.Context, req *events.Event) error {
+func (db *Badger) WriteEvent(ctx context.Context, req *events.Event) (*events.WriteEventResponse, error) {
 	r := util.Retrier{
 		InitialInterval:     1 * time.Millisecond,
 		MaxInterval:         10 * time.Second,
@@ -34,7 +34,7 @@ func (db *Badger) WriteEvent(ctx context.Context, req *events.Event) error {
 		},
 	}
 
-	return r.Retry(ctx, func() error {
+	return &events.WriteEventResponse{}, r.Retry(ctx, func() error {
 		return db.writeEvent(ctx, req)
 	})
 }

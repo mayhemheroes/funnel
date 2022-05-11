@@ -13,7 +13,7 @@ import (
 )
 
 // WriteEvent creates an event for the server to handle.
-func (db *MongoDB) WriteEvent(ctx context.Context, req *events.Event) error {
+func (db *MongoDB) WriteEvent(ctx context.Context, req *events.Event) (*events.WriteEventResponse, error) {
 	sess := db.sess.Copy()
 	defer sess.Close()
 	tasks := db.tasks(sess)
@@ -29,7 +29,7 @@ func (db *MongoDB) WriteEvent(ctx context.Context, req *events.Event) error {
 				Logs: []*tes.ExecutorLog{},
 			},
 		}
-		return tasks.Insert(&task)
+		return &events.WriteEventResponse{}, tasks.Insert(&task)
 
 	case events.Type_TASK_STATE:
 		retrier := util.NewRetrier()
@@ -40,7 +40,7 @@ func (db *MongoDB) WriteEvent(ctx context.Context, req *events.Event) error {
 			return false
 		}
 
-		return retrier.Retry(ctx, func() error {
+		return &events.WriteEventResponse{}, retrier.Retry(ctx, func() error {
 			// get current state & version
 			current := make(map[string]interface{})
 			q := tasks.Find(bson.M{"id": req.Id}).Select(bson.M{"state": 1, "version": 1})
@@ -136,5 +136,5 @@ func (db *MongoDB) WriteEvent(ctx context.Context, req *events.Event) error {
 		}
 	}
 
-	return tasks.Update(selector, update)
+	return &events.WriteEventResponse{}, tasks.Update(selector, update)
 }

@@ -58,7 +58,7 @@ func (db *Badger) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*te
 			it.Rewind()
 		}
 
-	taskLoop:
+		//taskLoop:
 		for ; it.Valid() && len(tasks) < pageSize; it.Next() {
 			var val []byte
 			err := it.Item().Value(func(d []byte) error {

@@ -9,22 +9,22 @@ import (
 )
 
 // WriteEvent writes a task event to the database.
-func (d *Datastore) WriteEvent(ctx context.Context, e *events.Event) error {
+func (d *Datastore) WriteEvent(ctx context.Context, e *events.Event) (*events.WriteEventResponse, error) {
 
 	switch e.Type {
 
 	case events.Type_TASK_CREATED:
 		putKeys, putData := marshalTask(e.GetTask())
 		_, err := d.client.PutMulti(ctx, putKeys, putData)
-		return err
+		return nil, err
 
 	case events.Type_EXECUTOR_STDOUT:
 		_, err := d.client.Put(ctx, stdoutKey(e.Id, e.Attempt, e.Index), marshalEvent(e))
-		return err
+		return nil, err
 
 	case events.Type_EXECUTOR_STDERR:
 		_, err := d.client.Put(ctx, stderrKey(e.Id, e.Attempt, e.Index), marshalEvent(e))
-		return err
+		return nil, err
 
 	case events.Type_SYSTEM_LOG:
 		_, err := d.client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
@@ -48,7 +48,7 @@ func (d *Datastore) WriteEvent(ctx context.Context, e *events.Event) error {
 			})
 			return err
 		})
-		return err
+		return nil, err
 
 	default:
 		_, err := d.client.RunInTransaction(ctx, func(tx *datastore.Transaction) error {
@@ -75,7 +75,7 @@ func (d *Datastore) WriteEvent(ctx context.Context, e *events.Event) error {
 			}
 
 			tb := events.TaskBuilder{Task: task}
-			err = tb.WriteEvent(context.Background(), e)
+			_, err = tb.WriteEvent(context.Background(), e)
 			if err != nil {
 				return err
 			}
@@ -84,6 +84,6 @@ func (d *Datastore) WriteEvent(ctx context.Context, e *events.Event) error {
 			_, err = tx.PutMulti(putKeys, putData)
 			return err
 		})
-		return err
+		return nil, err
 	}
 }

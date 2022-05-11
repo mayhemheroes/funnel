@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/getlantern/deepcopy"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/rs/xid"
 )
@@ -96,37 +95,6 @@ func RunnableState(s State) bool {
 func TerminalState(s State) bool {
 	return s == State_COMPLETE || s == State_EXECUTOR_ERROR || s == State_SYSTEM_ERROR ||
 		s == State_CANCELED
-}
-
-// GetBasicView returns the basic view of a task.
-func GetBasicView(task *Task) *Task {
-	view := &Task{}
-	deepcopy.Copy(view, task)
-
-	// remove contents from inputs
-	for _, v := range view.Inputs {
-		v.Content = ""
-	}
-
-	// remove stdout and stderr from Task.Logs.Logs
-	for _, tl := range view.Logs {
-		tl.SystemLogs = nil
-		for _, el := range tl.Logs {
-			el.Stdout = ""
-			el.Stderr = ""
-		}
-	}
-	return view
-}
-
-// GetMinimalView returns the minimal view of a task.
-func GetMinimalView(task *Task) *Task {
-	id := task.Id
-	state := task.State
-	return &Task{
-		Id:    id,
-		State: state,
-	}
 }
 
 // GetTaskLog gets the task log entry at the given index "i".

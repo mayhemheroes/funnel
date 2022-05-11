@@ -125,16 +125,17 @@ func TestWorkDirCleanup(t *testing.T) {
 
 type eventCounter struct {
 	stdout, stderr int
+	events.UnimplementedEventServiceServer
 }
 
-func (e *eventCounter) WriteEvent(ctx context.Context, ev *events.Event) error {
+func (e *eventCounter) WriteEvent(ctx context.Context, ev *events.Event) (*events.WriteEventResponse, error) {
 	switch ev.Type {
 	case events.Type_EXECUTOR_STDOUT:
 		e.stdout++
 	case events.Type_EXECUTOR_STDERR:
 		e.stderr++
 	}
-	return nil
+	return nil, nil
 }
 
 func (e *eventCounter) Close() {}

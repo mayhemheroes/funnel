@@ -30,12 +30,12 @@ type TaskServiceApiRouter interface {
 
 // TaskServiceApiServicer defines the api actions for the TaskServiceApi service
 // This interface intended to stay up to date with the openapi yaml used to generate it,
-// while the service implementation can ignored with the .openapi-generator-ignore file
+// while the service implementation can be ignored with the .openapi-generator-ignore file
 // and updated with the logic required for the API.
 type TaskServiceApiServicer interface { 
 	CancelTask(context.Context, string) (ImplResponse, error)
 	CreateTask(context.Context, TesTask) (ImplResponse, error)
 	GetServiceInfo(context.Context) (ImplResponse, error)
 	GetTask(context.Context, string, string) (ImplResponse, error)
-	ListTasks(context.Context, string, TesState, map[string]string, int64, string, string) (ImplResponse, error)
+	ListTasks(context.Context, string, TesState, []string, []string, int32, string, string) (ImplResponse, error)
 }

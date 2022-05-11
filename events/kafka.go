@@ -11,6 +11,7 @@ import (
 type KafkaWriter struct {
 	conf     config.Kafka
 	producer sarama.SyncProducer
+	UnimplementedEventServiceServer
 }
 
 // NewKafkaWriter creates a new event writer for writing events to a Kafka topic.
@@ -23,21 +24,21 @@ func NewKafkaWriter(ctx context.Context, conf config.Kafka) (*KafkaWriter, error
 		<-ctx.Done()
 		producer.Close()
 	}()
-	return &KafkaWriter{conf, producer}, nil
+	return &KafkaWriter{conf: conf, producer: producer}, nil
 }
 
 // WriteEvent writes the event. Events may be sent in batches in the background by the
 // Kafka client library. Currently stdout, stderr, and system log events are dropped.
-func (k *KafkaWriter) WriteEvent(ctx context.Context, ev *Event) error {
+func (k *KafkaWriter) WriteEvent(ctx context.Context, ev *Event) (*WriteEventResponse, error) {
 
 	switch ev.Type {
 	case Type_EXECUTOR_STDOUT, Type_EXECUTOR_STDERR, Type_SYSTEM_LOG:
-		return nil
+		return &WriteEventResponse{}, nil
 	}
 
 	s, err := Marshal(ev)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	msg := &sarama.ProducerMessage{
@@ -46,7 +47,7 @@ func (k *KafkaWriter) WriteEvent(ctx context.Context, ev *Event) error {
 		Value: sarama.StringEncoder(s),
 	}
 	_, _, err = k.producer.SendMessage(msg)
-	return err
+	return &WriteEventResponse{}, err
 }
 
 func (k *KafkaWriter) Close() {

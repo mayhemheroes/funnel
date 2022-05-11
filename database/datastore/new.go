@@ -6,12 +6,14 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/ohsu-comp-bio/funnel/compute/scheduler"
 	"github.com/ohsu-comp-bio/funnel/config"
+	"github.com/ohsu-comp-bio/funnel/events"
 	"google.golang.org/api/option"
 )
 
 // Datastore provides a task database on Google Cloud Datastore.
 type Datastore struct {
 	scheduler.UnimplementedSchedulerServiceServer
+	events.UnimplementedEventServiceServer
 	client *datastore.Client
 }
 
@@ -28,7 +30,7 @@ func NewDatastore(conf config.Datastore) (*Datastore, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Datastore{client}, nil
+	return &Datastore{client: client}, nil
 }
 
 // Init is a noop action for Datastore.

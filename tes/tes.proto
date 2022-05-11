@@ -45,10 +45,11 @@ message GetTaskRequest {
 message ListTasksRequest { 
 	string name_prefix = 1;
 	State state = 2;
-	map<string,string> tags = 3;
-	int32 page_size = 4;
-	string page_token = 5;
-	string view = 6;
+	repeated string tag_key = 3;
+	repeated string tag_value = 4;
+	int32 page_size = 5;
+	string page_token = 6;
+	string view = 7;
 }
 
 message CancelTaskResponse { 

@@ -5,12 +5,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/ohsu-comp-bio/funnel/config"
+	"github.com/ohsu-comp-bio/funnel/events"
 	util "github.com/ohsu-comp-bio/funnel/util/aws"
 )
 
 // DynamoDB provides handlers for gRPC endpoints
 // Data is stored/retrieved from the Amazon DynamoDB NoSQL database.
 type DynamoDB struct {
+	events.UnimplementedEventServiceServer
 	client         *dynamodb.DynamoDB
 	partitionKey   string
 	partitionValue string

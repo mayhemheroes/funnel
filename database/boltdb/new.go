@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/ohsu-comp-bio/funnel/compute/scheduler"
 	"github.com/ohsu-comp-bio/funnel/config"
+	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/util/fsutil"
 )
 
@@ -47,6 +48,7 @@ var SysLogs = []byte("system-logs")
 // Data is stored/retrieved from the BoltDB key-value database.
 type BoltDB struct {
 	scheduler.UnimplementedSchedulerServiceServer
+	events.UnimplementedEventServiceServer
 	db *bolt.DB
 }
 

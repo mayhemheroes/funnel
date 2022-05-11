@@ -5,11 +5,13 @@ import (
 
 	badger "github.com/dgraph-io/badger/v2"
 	"github.com/ohsu-comp-bio/funnel/config"
+	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/util/fsutil"
 )
 
 // Badger provides a task database based on the Badger embedded database.
 type Badger struct {
+	events.UnimplementedEventServiceServer
 	db *badger.DB
 }
 

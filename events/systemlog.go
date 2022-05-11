@@ -46,22 +46,26 @@ type SystemLogWriter struct {
 
 // Info writes an Event for an 'info' level log message
 func (sle *SystemLogWriter) Info(msg string, args ...interface{}) error {
-	return sle.out.WriteEvent(context.Background(), sle.gen.Info(msg, args...))
+	_, err := sle.out.WriteEvent(context.Background(), sle.gen.Info(msg, args...))
+	return err
 }
 
 // Debug writes an  for a 'debug' level log message
 func (sle *SystemLogWriter) Debug(msg string, args ...interface{}) error {
-	return sle.out.WriteEvent(context.Background(), sle.gen.Debug(msg, args...))
+	_, err := sle.out.WriteEvent(context.Background(), sle.gen.Debug(msg, args...))
+	return err
 }
 
 // Error writes an Event for an 'error' level log message
 func (sle *SystemLogWriter) Error(msg string, args ...interface{}) error {
-	return sle.out.WriteEvent(context.Background(), sle.gen.Error(msg, args...))
+	_, err := sle.out.WriteEvent(context.Background(), sle.gen.Error(msg, args...))
+	return err
 }
 
 // Warn writes an Event for an 'warning' level log message
 func (sle *SystemLogWriter) Warn(msg string, args ...interface{}) error {
-	return sle.out.WriteEvent(context.Background(), sle.gen.Warn(msg, args...))
+	_, err := sle.out.WriteEvent(context.Background(), sle.gen.Warn(msg, args...))
+	return err
 }
 
 // converts an argument list to a map, e.g.

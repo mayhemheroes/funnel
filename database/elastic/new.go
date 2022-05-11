@@ -6,6 +6,7 @@ import (
 
 	"github.com/ohsu-comp-bio/funnel/compute/scheduler"
 	"github.com/ohsu-comp-bio/funnel/config"
+	"github.com/ohsu-comp-bio/funnel/events"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 
@@ -20,6 +21,7 @@ type Elastic struct {
 	conf      config.Elastic
 	taskIndex string
 	nodeIndex string
+	events.UnimplementedEventServiceServer
 }
 
 // NewElastic returns a new Elastic instance.
@@ -37,10 +39,10 @@ func NewElastic(conf config.Elastic) (*Elastic, error) {
 		return nil, err
 	}
 	es := &Elastic{
-		client,
-		conf,
-		conf.IndexPrefix + "-tasks",
-		conf.IndexPrefix + "-nodes",
+		client:    client,
+		conf:      conf,
+		taskIndex: conf.IndexPrefix + "-tasks",
+		nodeIndex: conf.IndexPrefix + "-nodes",
 	}
 	return es, nil
 }

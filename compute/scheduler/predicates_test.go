@@ -17,7 +17,7 @@ func TestResourcesFitEmptyTask(t *testing.T) {
 
 func TestCpuResourcesFit(t *testing.T) {
 	j := &tes.Task{
-		Resources: tes.Resources{
+		Resources: &tes.Resources{
 			CpuCores: 1,
 		},
 	}

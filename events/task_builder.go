@@ -9,10 +9,11 @@ import (
 // TaskBuilder aggregates events into an in-memory Task object.
 type TaskBuilder struct {
 	*tes.Task
+	UnimplementedEventServiceServer
 }
 
 // WriteEvent updates the Task object.
-func (tb TaskBuilder) WriteEvent(ctx context.Context, ev *Event) error {
+func (tb TaskBuilder) WriteEvent(ctx context.Context, ev *Event) (*WriteEventResponse, error) {
 	t := tb.Task
 	t.Id = ev.Id
 	attempt := int(ev.Attempt)
@@ -22,7 +23,7 @@ func (tb TaskBuilder) WriteEvent(ctx context.Context, ev *Event) error {
 	case Type_TASK_STATE:
 		to := ev.GetState()
 		if err := tes.ValidateTransition(t.GetState(), ev.GetState()); err != nil {
-			return err
+			return nil, err
 		}
 		t.State = to
 
@@ -62,7 +63,7 @@ func (tb TaskBuilder) WriteEvent(ctx context.Context, ev *Event) error {
 		t.GetLogs()[attempt].Logs[index].Stderr = ev.GetStderr()
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (tb TaskBuilder) Close() {}

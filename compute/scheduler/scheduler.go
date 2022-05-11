@@ -124,7 +124,7 @@ func (s *Scheduler) Schedule(ctx context.Context) error {
 				continue
 			}
 
-			err = s.Event.WriteEvent(ctx, events.NewState(task.Id, tes.State_INITIALIZING))
+			_, err = s.Event.WriteEvent(ctx, events.NewState(task.Id, tes.State_INITIALIZING))
 			if err != nil {
 				s.Log.Error("Error marking task as initializing",
 					"error", err,

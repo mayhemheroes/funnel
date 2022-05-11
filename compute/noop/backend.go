@@ -14,11 +14,13 @@ func NewBackend() *Backend {
 
 // Backend is a scheduler backend that doesn't do anything
 // which is useful for testing.
-type Backend struct{}
+type Backend struct {
+	events.UnimplementedEventServiceServer
+}
 
 // WriteEvent is a noop and returns nil.
-func (b *Backend) WriteEvent(context.Context, *events.Event) error {
-	return nil
+func (b *Backend) WriteEvent(context.Context, *events.Event) (*events.WriteEventResponse, error) {
+	return nil, nil
 }
 
 func (b *Backend) Close() {}

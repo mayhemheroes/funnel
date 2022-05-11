@@ -17,7 +17,7 @@ import (
 )
 
 // WriteEvent creates an event for the server to handle.
-func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
+func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) (*events.WriteEventResponse, error) {
 	item := &dynamodb.UpdateItemInput{
 		TableName: aws.String(db.taskTable),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -34,7 +34,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	switch e.Type {
 	case events.Type_TASK_CREATED:
-		return db.createTask(ctx, e.GetTask())
+		return &events.WriteEventResponse{}, db.createTask(ctx, e.GetTask())
 
 	case events.Type_TASK_STATE:
 		retrier := util.NewRetrier()
@@ -48,7 +48,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 			return false
 		}
 
-		return retrier.Retry(ctx, func() error {
+		return &events.WriteEventResponse{}, retrier.Retry(ctx, func() error {
 			// get current state & version
 			current := make(map[string]interface{})
 			response, err := db.getBasicView(ctx, e.Id)
@@ -94,7 +94,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_TASK_START_TIME:
 		if err := db.ensureTaskLog(ctx, e.Id, e.Attempt); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 
 		updateExpr = expression.Set(
@@ -104,7 +104,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_TASK_END_TIME:
 		if err := db.ensureTaskLog(ctx, e.Id, e.Attempt); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 
 		updateExpr = expression.Set(
@@ -114,7 +114,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_TASK_OUTPUTS:
 		if err := db.ensureTaskLog(ctx, e.Id, e.Attempt); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 
 		updateExpr = expression.Set(
@@ -124,11 +124,11 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_TASK_METADATA:
 		if err := db.ensureTaskLog(ctx, e.Id, e.Attempt); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 
 		if err := db.ensureTaskLogMetadata(ctx, e.Id, e.Attempt); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 
 		for k, v := range e.GetMetadata().Value {
@@ -140,7 +140,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_EXECUTOR_START_TIME:
 		if err := db.ensureExecLog(ctx, e.Id, e.Attempt, e.Index); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 		updateExpr = expression.Set(
 			expression.Name(fmt.Sprintf("logs[%v].logs[%v].start_time", e.Attempt, e.Index)),
@@ -149,7 +149,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_EXECUTOR_END_TIME:
 		if err := db.ensureExecLog(ctx, e.Id, e.Attempt, e.Index); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 		updateExpr = expression.Set(
 			expression.Name(fmt.Sprintf("logs[%v].logs[%v].end_time", e.Attempt, e.Index)),
@@ -158,7 +158,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_EXECUTOR_EXIT_CODE:
 		if err := db.ensureExecLog(ctx, e.Id, e.Attempt, e.Index); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 		updateExpr = expression.Set(
 			expression.Name(fmt.Sprintf("logs[%v].logs[%v].exit_code", e.Attempt, e.Index)),
@@ -215,7 +215,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	case events.Type_SYSTEM_LOG:
 		if err := db.ensureSysLog(ctx, e.Id, e.Attempt); err != nil {
-			return err
+			return &events.WriteEventResponse{}, err
 		}
 
 		item = &dynamodb.UpdateItemInput{
@@ -238,7 +238,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 
 	expr, err := expression.NewBuilder().WithUpdate(updateExpr).Build()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	item.ExpressionAttributeNames = expr.Names()
@@ -249,7 +249,7 @@ func (db *DynamoDB) WriteEvent(ctx context.Context, e *events.Event) error {
 	}
 
 	_, err = db.client.UpdateItemWithContext(ctx, item)
-	return checkErrNotFound(err)
+	return &events.WriteEventResponse{}, checkErrNotFound(err)
 }
 
 func (db *DynamoDB) ensureTaskLog(ctx context.Context, id string, attempt uint32) error {

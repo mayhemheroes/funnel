@@ -82,27 +82,32 @@ func NewExecutorWriter(taskID string, attempt uint32, index uint32, w Writer) *E
 
 // StartTime updates the task's start time log.
 func (ew *ExecutorWriter) StartTime(t time.Time) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.StartTime(t))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.StartTime(t))
+	return err
 }
 
 // EndTime updates the task's end time log.
 func (ew *ExecutorWriter) EndTime(t time.Time) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.EndTime(t))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.EndTime(t))
+	return err
 }
 
 // ExitCode updates an executor's exit code log.
 func (ew *ExecutorWriter) ExitCode(x int) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.ExitCode(x))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.ExitCode(x))
+	return err
 }
 
 // Stdout appends to an executor's stdout log.
 func (ew *ExecutorWriter) Stdout(s string) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.Stdout(s))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.Stdout(s))
+	return err
 }
 
 // Stderr appends to an executor's stderr log.
 func (ew *ExecutorWriter) Stderr(s string) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.Stderr(s))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.Stderr(s))
+	return err
 }
 
 // Info writes an info level system log message.
@@ -156,7 +161,8 @@ func LogTail(ctx context.Context, taskID string, attempt, index uint32, size int
 		case Type_EXECUTOR_STDERR:
 			e = NewStderr(taskID, attempt, index, s)
 		}
-		return out.WriteEvent(ctx, e)
+		_, err := out.WriteEvent(ctx, e)
+		return err
 	}
 
 	go func() {

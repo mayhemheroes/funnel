@@ -62,7 +62,7 @@ func (db *MongoDB) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*t
 		query["state"] = bson.M{"$eq": req.State}
 	}
 
-	for k, v := range req.Tags {
+	for k, v := range req.GetTags() {
 		query[fmt.Sprintf("tags.%s", k)] = bson.M{"$eq": v}
 	}
 

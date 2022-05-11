@@ -12,6 +12,7 @@ import (
 // PubSubWriter writes events to Google Cloud Pub/Sub.
 type PubSubWriter struct {
 	topic *pubsub.Topic
+	UnimplementedEventServiceServer
 }
 
 // NewPubSubWriter creates a new PubSubWriter.
@@ -47,27 +48,27 @@ func NewPubSubWriter(ctx context.Context, conf config.PubSub) (*PubSubWriter, er
 		<-ctx.Done()
 		topic.Stop()
 	}()
-	return &PubSubWriter{topic}, nil
+	return &PubSubWriter{topic: topic}, nil
 }
 
 // WriteEvent writes an event to the configured Pub/Sub topic.
 // Events are buffered and sent in batches by a background routine.
 // Stdout, stderr, and system log events are not sent.
-func (p *PubSubWriter) WriteEvent(ctx context.Context, ev *Event) error {
+func (p *PubSubWriter) WriteEvent(ctx context.Context, ev *Event) (*WriteEventResponse, error) {
 	switch ev.Type {
 	case Type_EXECUTOR_STDOUT, Type_EXECUTOR_STDERR, Type_SYSTEM_LOG:
-		return nil
+		return &WriteEventResponse{}, nil
 	}
 
 	s, err := Marshal(ev)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	p.topic.Publish(ctx, &pubsub.Message{
 		Data: []byte(s),
 	})
-	return nil
+	return &WriteEventResponse{}, nil
 }
 
 func (p *PubSubWriter) Close() {}

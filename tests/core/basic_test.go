@@ -680,13 +680,13 @@ func TestOutputFileLog(t *testing.T) {
 		t.Fatal("unexpected output url")
 	}
 
-	if out[0].SizeBytes != 3 {
+	if out[0].SizeBytes != "3" {
 		t.Fatal("unexpected output size")
 	}
-	if out[1].SizeBytes != 5 {
+	if out[1].SizeBytes != "5" {
 		t.Fatal("unexpected output size")
 	}
-	if out[2].SizeBytes != 4 {
+	if out[2].SizeBytes != "4" {
 		t.Fatal("unexpected output size")
 	}
 }
@@ -965,10 +965,9 @@ func TestListTaskFilterTags(t *testing.T) {
 	}
 
 	r, err = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
-		View: tes.View_BASIC.String(),
-		Tags: map[string]string{
-			"foo": "bar",
-		},
+		View:     tes.View_BASIC.String(),
+		TagKey:   []string{"foo"},
+		TagValue: []string{"bar"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -981,10 +980,9 @@ func TestListTaskFilterTags(t *testing.T) {
 	}
 
 	r, err = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
-		View: tes.View_BASIC.String(),
-		Tags: map[string]string{
-			"hello": "world",
-		},
+		View:     tes.View_BASIC.String(),
+		TagKey:   []string{"hello"},
+		TagValue: []string{"world"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -997,10 +995,9 @@ func TestListTaskFilterTags(t *testing.T) {
 	}
 
 	r, err = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
-		View: tes.View_BASIC.String(),
-		Tags: map[string]string{
-			"ASFasfa": "",
-		},
+		View:     tes.View_BASIC.String(),
+		TagKey:   []string{"ASFasfa"},
+		TagValue: []string{""},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1051,11 +1048,10 @@ func TestListTaskMultipleFilters(t *testing.T) {
 	}
 
 	r, err = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
-		View:  tes.View_BASIC.String(),
-		State: tes.State_COMPLETE,
-		Tags: map[string]string{
-			"foo": "bar",
-		},
+		View:     tes.View_BASIC.String(),
+		State:    tes.State_COMPLETE,
+		TagKey:   []string{"foo"},
+		TagValue: []string{"bar"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1068,11 +1064,10 @@ func TestListTaskMultipleFilters(t *testing.T) {
 	}
 
 	r, err = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
-		View:  tes.View_BASIC.String(),
-		State: tes.State_COMPLETE,
-		Tags: map[string]string{
-			"hello": "world",
-		},
+		View:     tes.View_BASIC.String(),
+		State:    tes.State_COMPLETE,
+		TagKey:   []string{"hello"},
+		TagValue: []string{"world"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1085,11 +1080,10 @@ func TestListTaskMultipleFilters(t *testing.T) {
 	}
 
 	r, _ = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
-		View:  tes.View_BASIC.String(),
-		State: tes.State_CANCELED,
-		Tags: map[string]string{
-			"hello": "world",
-		},
+		View:     tes.View_BASIC.String(),
+		State:    tes.State_CANCELED,
+		TagKey:   []string{"hello"},
+		TagValue: []string{"world"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1099,11 +1093,10 @@ func TestListTaskMultipleFilters(t *testing.T) {
 	}
 
 	r, _ = f.HTTP.ListTasks(ctx, &tes.ListTasksRequest{
-		View:  tes.View_BASIC.String(),
-		State: tes.State_CANCELED,
-		Tags: map[string]string{
-			"fizz": "buzz",
-		},
+		View:     tes.View_BASIC.String(),
+		State:    tes.State_CANCELED,
+		TagKey:   []string{"fizz"},
+		TagValue: []string{"buzz"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -1138,7 +1131,7 @@ func TestConcurrentStateUpdate(t *testing.T) {
 			}
 
 			log.Info("writing state initializing event", "taskID", id)
-			err = w.EventWriter.WriteEvent(ctx, events.NewState(id, tes.State_INITIALIZING))
+			_, err = w.EventWriter.WriteEvent(ctx, events.NewState(id, tes.State_INITIALIZING))
 			if err != nil {
 				log.Error("error writing event", err)
 			}
@@ -1152,7 +1145,7 @@ func TestConcurrentStateUpdate(t *testing.T) {
 			}
 
 			log.Info("writing state canceled event", "taskID", id)
-			err = w.EventWriter.WriteEvent(ctx, events.NewState(id, tes.State_CANCELED))
+			_, err = w.EventWriter.WriteEvent(ctx, events.NewState(id, tes.State_CANCELED))
 			if err != nil {
 				log.Error("error writing event", "error", err, "taskID", id)
 			}
@@ -1185,11 +1178,11 @@ func TestMetadataEvent(t *testing.T) {
 	}
 	e := w.EventWriter
 
-	err = e.WriteEvent(ctx, events.NewMetadata(id, 0, map[string]string{"one": "two"}))
+	_, err = e.WriteEvent(ctx, events.NewMetadata(id, 0, map[string]string{"one": "two"}))
 	if err != nil {
 		t.Error("error writing event", err)
 	}
-	err = e.WriteEvent(ctx, events.NewMetadata(id, 0, map[string]string{"three": "four"}))
+	_, err = e.WriteEvent(ctx, events.NewMetadata(id, 0, map[string]string{"three": "four"}))
 	if err != nil {
 		t.Error("error writing event", "error", err, "taskID", id)
 	}

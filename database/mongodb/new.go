@@ -7,11 +7,13 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/ohsu-comp-bio/funnel/compute/scheduler"
 	"github.com/ohsu-comp-bio/funnel/config"
+	"github.com/ohsu-comp-bio/funnel/events"
 )
 
 // MongoDB provides an MongoDB database server backend.
 type MongoDB struct {
 	scheduler.UnimplementedSchedulerServiceServer
+	events.UnimplementedEventServiceServer
 	sess   *mgo.Session
 	conf   config.MongoDB
 	active bool

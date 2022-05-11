@@ -12,10 +12,11 @@ import (
 // Logger writes events to a funnel logger.
 type Logger struct {
 	Log *logger.Logger
+	UnimplementedEventServiceServer
 }
 
 // WriteEvent writes an event to the logger.
-func (el *Logger) WriteEvent(ctx context.Context, ev *Event) error {
+func (el *Logger) WriteEvent(ctx context.Context, ev *Event) (*WriteEventResponse, error) {
 	ts := ev.Type.String()
 	log := el.Log.WithFields(
 		"taskID", ev.Id,
@@ -71,7 +72,7 @@ func (el *Logger) WriteEvent(ctx context.Context, ev *Event) error {
 	default:
 		log.Info(ts, "event", ev)
 	}
-	return nil
+	return nil, nil
 }
 
 func (el *Logger) Close() {}

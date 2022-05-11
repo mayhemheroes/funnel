@@ -38,21 +38,22 @@ type HPCBackend struct {
 	MapStates     func([]string) ([]*HPCTaskState, error)
 	ReconcileRate time.Duration
 	Log           *logger.Logger
+	events.UnimplementedEventServiceServer
 }
 
 // WriteEvent writes an event to the compute backend.
 // Currently, only TASK_CREATED is handled, which calls Submit.
-func (b *HPCBackend) WriteEvent(ctx context.Context, ev *events.Event) error {
+func (b *HPCBackend) WriteEvent(ctx context.Context, ev *events.Event) (*events.WriteEventResponse, error) {
 	switch ev.Type {
 	case events.Type_TASK_CREATED:
-		return b.Submit(ev.GetTask())
+		return nil, b.Submit(ev.GetTask())
 
 	case events.Type_TASK_STATE:
 		if ev.GetState() == tes.State_CANCELED {
-			return b.Cancel(ctx, ev.Id)
+			return nil, b.Cancel(ctx, ev.Id)
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (b *HPCBackend) Close() {}
@@ -88,10 +89,11 @@ func (b *HPCBackend) Submit(task *tes.Task) error {
 
 	backendID := b.ExtractID(stdout.String())
 
-	return b.Event.WriteEvent(
+	_, err = b.Event.WriteEvent(
 		ctx,
 		events.NewMetadata(task.Id, 0, map[string]string{fmt.Sprintf("%s_id", b.Name): backendID}),
 	)
+	return err
 }
 
 // Cancel cancels a task via "qdel", "condor_rm", "scancel", etc.

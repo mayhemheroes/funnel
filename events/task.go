@@ -84,27 +84,32 @@ func NewTaskWriter(taskID string, attempt uint32, w Writer) *TaskWriter {
 
 // State sets the state of the task.
 func (ew *TaskWriter) State(s tes.State) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.State(s))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.State(s))
+	return err
 }
 
 // StartTime updates the task's start time log.
 func (ew *TaskWriter) StartTime(t time.Time) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.StartTime(t))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.StartTime(t))
+	return err
 }
 
 // EndTime updates the task's end time log.
 func (ew *TaskWriter) EndTime(t time.Time) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.EndTime(t))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.EndTime(t))
+	return err
 }
 
 // Outputs updates the task's output file log.
 func (ew *TaskWriter) Outputs(f []*tes.OutputFileLog) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.Outputs(f))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.Outputs(f))
+	return err
 }
 
 // Metadata updates the task's metadata log.
 func (ew *TaskWriter) Metadata(m map[string]string) error {
-	return ew.out.WriteEvent(context.Background(), ew.gen.Metadata(m))
+	_, err := ew.out.WriteEvent(context.Background(), ew.gen.Metadata(m))
+	return err
 }
 
 // Info creates an info level system log message.

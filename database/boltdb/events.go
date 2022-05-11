@@ -12,7 +12,7 @@ import (
 )
 
 // WriteEvent creates an event for the server to handle.
-func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error {
+func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) (*events.WriteEventResponse, error) {
 	var err error
 
 	if req.Type == events.Type_TASK_CREATED {
@@ -20,7 +20,7 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 		idBytes := []byte(task.Id)
 		taskString, err := proto.Marshal(task)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		err = taskBolt.db.Update(func(tx *bolt.Tx) error {
 			tx.Bucket(TaskBucket).Put(idBytes, taskString)
@@ -28,13 +28,13 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 			return nil
 		})
 		if err != nil {
-			return fmt.Errorf("error storing task in database: %s", err)
+			return nil, fmt.Errorf("error storing task in database: %s", err)
 		}
 		err = taskBolt.queueTask(task)
 		if err != nil {
-			return fmt.Errorf("error queueing task in database: %s", err)
+			return nil, fmt.Errorf("error queueing task in database: %s", err)
 		}
-		return nil
+		return &events.WriteEventResponse{}, nil
 	}
 
 	// Check that the task exists
@@ -43,7 +43,7 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 		return err
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	tl := &tes.TaskLog{}
@@ -119,14 +119,14 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 			return nil
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		syslogs = append(syslogs, req.SysLogString())
 
 		logbytes, err := json.Marshal(syslogs)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		err = taskBolt.db.Update(func(tx *bolt.Tx) error {
@@ -135,7 +135,7 @@ func (taskBolt *BoltDB) WriteEvent(ctx context.Context, req *events.Event) error
 		})
 	}
 
-	return err
+	return nil, err
 }
 
 func transitionTaskState(tx *bolt.Tx, id string, target tes.State) error {

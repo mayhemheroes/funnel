@@ -47,7 +47,7 @@ func NewTaskServiceApiController(s TaskServiceApiServicer, opts ...TaskServiceAp
 	return controller
 }
 
-// Routes returns all of the api route for the TaskServiceApiController
+// Routes returns all the api routes for the TaskServiceApiController
 func (c *TaskServiceApiController) Routes() Routes {
 	return Routes{ 
 		{
@@ -142,7 +142,7 @@ func (c *TaskServiceApiController) GetTask(w http.ResponseWriter, r *http.Reques
 	query := r.URL.Query()
 	idParam := params["id"]
 	
-	viewParam := query.Get("view")
+	viewParam :=  query.Get("view")
 	result, err := c.service.GetTask(r.Context(), idParam, viewParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
@@ -157,17 +157,18 @@ func (c *TaskServiceApiController) GetTask(w http.ResponseWriter, r *http.Reques
 // ListTasks - ListTasks
 func (c *TaskServiceApiController) ListTasks(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	namePrefixParam := query.Get("name_prefix")
-	stateParam := query.Get("state")
-	tagsParam := query.Get("tags")
-	pageSizeParam, err := parseInt64Parameter(query.Get("page_size"), false)
+	namePrefixParam :=  query.Get("name_prefix")
+	stateParam := TesState(  query.Get("state") )
+	tagKeyParam := strings.Split(query.Get("tag_key"), ",")
+	tagValueParam := strings.Split(query.Get("tag_value"), ",")
+	pageSizeParam, err := parseInt32Parameter(query.Get("page_size"), false)
 	if err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	pageTokenParam := query.Get("page_token")
-	viewParam := query.Get("view")
-	result, err := c.service.ListTasks(r.Context(), namePrefixParam, stateParam, tagsParam, pageSizeParam, pageTokenParam, viewParam)
+	pageTokenParam :=  query.Get("page_token")
+	viewParam :=  query.Get("view")
+	result, err := c.service.ListTasks(r.Context(), namePrefixParam, stateParam, tagKeyParam, tagValueParam, pageSizeParam, pageTokenParam, viewParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)

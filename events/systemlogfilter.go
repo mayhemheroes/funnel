@@ -8,10 +8,11 @@ import (
 type SystemLogFilter struct {
 	Writer Writer
 	Level  string
+	UnimplementedEventServiceServer
 }
 
 // WriteEvent writes an event to the writer. Writing stops on the first error.
-func (w *SystemLogFilter) WriteEvent(ctx context.Context, ev *Event) error {
+func (w *SystemLogFilter) WriteEvent(ctx context.Context, ev *Event) (*WriteEventResponse, error) {
 	switch ev.Type {
 	case Type_SYSTEM_LOG:
 		lvl := ev.GetSystemLog().Level
@@ -26,7 +27,7 @@ func (w *SystemLogFilter) WriteEvent(ctx context.Context, ev *Event) error {
 		return w.Writer.WriteEvent(ctx, ev)
 	}
 
-	return nil
+	return &WriteEventResponse{}, nil
 }
 
 func (w *SystemLogFilter) Close() {

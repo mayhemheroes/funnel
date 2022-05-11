@@ -49,7 +49,7 @@ func (s *TaskServiceApiService) CreateTask(ctx context.Context, body openapi.Tes
 	//TODO: Uncomment the next line to return response Response(200, TesCreateTaskResponse{}) or use other options such as http.Ok ...
 	//return Response(200, TesCreateTaskResponse{}), nil
 
-	task := convert.O2PTask(body)
+	task := convert.OpenAPIToProtoTask(body)
 
 	if err := tes.InitTask(task, true); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
@@ -95,7 +95,7 @@ func (s *TaskServiceApiService) GetTask(ctx context.Context, id string, view str
 }
 
 // ListTasks - ListTasks
-func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string, state openapi.TesState, tags map[string]string, pageSize int64, pageToken string, view string) (openapi.ImplResponse, error) {
+func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string, state openapi.TesState, tagKey []string, tagValue []string, pageSize int32, pageToken string, view string) (openapi.ImplResponse, error) {
 	// TODO - update ListTasks with the required logic for this service method.
 	// Add api_task_service_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

@@ -81,7 +81,7 @@ func execLogUpdate(attempt, index uint32, field string, value interface{}) *elas
 }
 
 // WriteEvent writes a task update event.
-func (es *Elastic) WriteEvent(ctx context.Context, ev *events.Event) error {
+func (es *Elastic) WriteEvent(ctx context.Context, ev *events.Event) (*events.WriteEventResponse, error) {
 	u := es.client.Update().
 		Index(es.taskIndex).
 		Type("task").
@@ -94,7 +94,7 @@ func (es *Elastic) WriteEvent(ctx context.Context, ev *events.Event) error {
 		mar := jsonpb.Marshaler{}
 		s, err := mar.MarshalToString(task)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		_, err = es.client.Index().
@@ -103,7 +103,7 @@ func (es *Elastic) WriteEvent(ctx context.Context, ev *events.Event) error {
 			Id(task.Id).
 			BodyString(s).
 			Do(ctx)
-		return err
+		return &events.WriteEventResponse{}, err
 
 	case events.Type_TASK_STATE:
 		retrier := util.NewRetrier()
@@ -114,7 +114,7 @@ func (es *Elastic) WriteEvent(ctx context.Context, ev *events.Event) error {
 			return false
 		}
 
-		return retrier.Retry(ctx, func() error {
+		return &events.WriteEventResponse{}, retrier.Retry(ctx, func() error {
 			// get current state & version
 			res, err := es.getTask(ctx, &tes.GetTaskRequest{Id: ev.Id})
 			if err != nil {
@@ -178,7 +178,7 @@ func (es *Elastic) WriteEvent(ctx context.Context, ev *events.Event) error {
 
 	_, err := u.Do(ctx)
 	if elastic.IsNotFound(err) {
-		return tes.ErrNotFound
+		return nil, tes.ErrNotFound
 	}
-	return err
+	return &events.WriteEventResponse{}, err
 }

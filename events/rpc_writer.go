@@ -10,6 +10,7 @@ import (
 
 // RPCWriter is a type which writes Events to RPC.
 type RPCWriter struct {
+	UnimplementedEventServiceServer
 	client EventServiceClient
 	conn   *grpc.ClientConn
 }
@@ -22,14 +23,14 @@ func NewRPCWriter(ctx context.Context, conf config.RPCClient) (*RPCWriter, error
 	}
 	cli := NewEventServiceClient(conn)
 
-	return &RPCWriter{cli, conn}, nil
+	return &RPCWriter{client: cli, conn: conn}, nil
 }
 
 // WriteEvent writes the event to the server via gRPC.
 // The RPC call may timeout, based on the timeout given by the configuration in NewRPCWriter.
-func (r *RPCWriter) WriteEvent(ctx context.Context, e *Event) error {
+func (r *RPCWriter) WriteEvent(ctx context.Context, e *Event) (*WriteEventResponse, error) {
 	_, err := r.client.WriteEvent(ctx, e)
-	return err
+	return nil, err
 }
 
 // Close closes the connection.

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 
+	"context"
+
 	"github.com/ohsu-comp-bio/funnel/tes"
-	"golang.org/x/net/context"
 )
 
 // Get runs the "task get" CLI command, which connects to the server,
@@ -28,7 +29,7 @@ func Get(server string, ids []string, taskView string, w io.Writer) error {
 	for _, taskID := range ids {
 		resp, err := cli.GetTask(context.Background(), &tes.GetTaskRequest{
 			Id:   taskID,
-			View: tes.View(view),
+			View: tes.View(view).String(),
 		})
 		if err != nil {
 			return err

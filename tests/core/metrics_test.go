@@ -34,15 +34,9 @@ func TestMetrics(t *testing.T) {
 	fun.Wait(id3)
 
 	bg := context.Background()
-	resp, err := fun.HTTP.GetServiceInfo(bg, &tes.GetServiceInfoRequest{})
+	_, err := fun.HTTP.GetServiceInfo(bg, &tes.GetServiceInfoRequest{})
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	log.Info("INFO", resp)
-	counts := resp.TaskStateCounts
-	if len(counts) != 9 || counts["COMPLETE"] != 2 || counts["EXECUTOR_ERROR"] != 1 || counts["RUNNING"] != 1 {
-		t.Error("unexpected counts from service info")
 	}
 
 	// TODO unfortunately, we have to wait for the prometheus poller to update

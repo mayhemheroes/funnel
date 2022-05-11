@@ -114,7 +114,8 @@ func (taskBolt *BoltDB) GetTask(ctx context.Context, req *tes.GetTaskRequest) (*
 	var err error
 
 	err = taskBolt.db.View(func(tx *bolt.Tx) error {
-		task, err = getTaskView(tx, req.Id, req.View)
+		t, _ := tes.GetTaskView(req.View)
+		task, err = getTaskView(tx, req.Id, t)
 		return err
 	})
 	return task, err
@@ -141,9 +142,9 @@ func getTaskView(tx *bolt.Tx, id string, view tes.View) (*tes.Task, error) {
 func (taskBolt *BoltDB) ListTasks(ctx context.Context, req *tes.ListTasksRequest) (*tes.ListTasksResponse, error) {
 	var tasks []*tes.Task
 	// If the tags filter request is non-nil we need the basic or full view
-	view := req.View
-	if req.View == tes.View_MINIMAL.String() && req.Tags != nil {
-		view = tes.View_BASIC.String()
+	view, _ := tes.GetTaskView(req.View)
+	if req.View == tes.View_MINIMAL.String() && req.TagKey != nil {
+		view = tes.View_BASIC
 	}
 	pageSize := tes.GetPageSize(req.GetPageSize())
 
@@ -173,14 +174,14 @@ func (taskBolt *BoltDB) ListTasks(ctx context.Context, req *tes.ListTasksRequest
 				continue taskLoop
 			}
 
-			for k, v := range req.Tags {
+			for k, v := range req.GetTags() {
 				tval, ok := task.Tags[k]
 				if !ok || tval != v {
 					continue taskLoop
 				}
 			}
 
-			if req.View == tes.Minimal {
+			if req.View == tes.View_MINIMAL.String() {
 				task = task.GetMinimalView()
 			}
 

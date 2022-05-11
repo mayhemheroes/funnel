@@ -13,6 +13,7 @@ import (
 	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/logger"
 	"github.com/ohsu-comp-bio/funnel/tes"
+	"github.com/ohsu-comp-bio/funnel/tes/openapi"
 	"github.com/ohsu-comp-bio/funnel/webdash"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/net/context"
@@ -23,10 +24,10 @@ import (
 // RPC traffic via gRPC, HTTP traffic for the TES API,
 // and also serves the web dashboard.
 type Server struct {
-	RPCAddress string
-	HTTPPort   string
-	BasicAuth  []config.BasicCredential
-	//Tasks            tes.TaskServiceServer
+	RPCAddress       string
+	HTTPPort         string
+	BasicAuth        []config.BasicCredential
+	Tasks            *openapi.TaskServiceApiService
 	Events           events.EventServiceServer
 	Nodes            scheduler.SchedulerServiceServer
 	DisableHTTPCache bool
@@ -116,13 +117,11 @@ func (s *Server) Serve(pctx context.Context) error {
 
 	// Register TES service
 	if s.Tasks != nil {
-		tes.RegisterTaskServiceServer(grpcServer, s.Tasks)
-		err := tes.RegisterTaskServiceHandlerFromEndpoint(
-			ctx, grpcMux, s.RPCAddress, dialOpts,
-		)
-		if err != nil {
-			return err
-		}
+		TaskServiceApiController := openapi.NewTaskServiceApiController(s.Tasks)
+		router := openapi.NewRouter(TaskServiceApiController)
+		router.HandleFunc("/v1/", func(resp http.ResponseWriter, req *http.Request) {
+			router.ServeHTTP(resp, req)
+		})
 	}
 
 	// Register Events service

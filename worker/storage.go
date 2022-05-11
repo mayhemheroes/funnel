@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/ohsu-comp-bio/funnel/events"
@@ -192,7 +193,7 @@ func (u *upload) Finished(obj *storage.Object) {
 	u.log = &tes.OutputFileLog{
 		Url:       obj.URL,
 		Path:      u.out.Path,
-		SizeBytes: obj.Size,
+		SizeBytes: strconv.FormatInt(obj.Size, 10),
 	}
 	u.ev.Info("upload finished", "url", obj.URL, "etag", obj.ETag, "size", obj.Size)
 }

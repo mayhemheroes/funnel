@@ -88,21 +88,22 @@ type Backend struct {
 	event     events.Writer
 	database  tes.ReadOnlyServer
 	log       *logger.Logger
+	events.UnimplementedEventServiceServer
 }
 
 // WriteEvent writes an event to the compute backend.
 // Currently, only TASK_CREATED is handled, which calls Submit.
-func (b *Backend) WriteEvent(ctx context.Context, ev *events.Event) error {
+func (b *Backend) WriteEvent(ctx context.Context, ev *events.Event) (*events.WriteEventResponse, error) {
 	switch ev.Type {
 	case events.Type_TASK_CREATED:
-		return b.Submit(ev.GetTask())
+		return nil, b.Submit(ev.GetTask())
 
 	case events.Type_TASK_STATE:
 		if ev.GetState() == tes.State_CANCELED {
-			return b.Cancel(ctx, ev.Id)
+			return nil, b.Cancel(ctx, ev.Id)
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (b *Backend) Close() {

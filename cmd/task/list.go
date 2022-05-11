@@ -42,7 +42,7 @@ func List(server, taskView, pageToken, stateFilter string, tagsFilter []string, 
 
 	for {
 		req := &tes.ListTasksRequest{
-			View:      tes.View(view),
+			View:      tes.View(view).String(),
 			PageToken: pageToken,
 			PageSize:  pageSize,
 			//State:     state,
