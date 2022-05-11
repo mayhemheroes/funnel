@@ -19,7 +19,7 @@ func OpenApi2Proto(src interface{}, dst proto.Message) {
 		if df, ok := dv.Type().FieldByName(sf.Name); ok {
 			fmt.Printf("%s -> %s\n", sf.Name, df.Name)
 			switch df.Type.Kind() {
-			case reflect.String:
+			case reflect.String, reflect.Int, reflect.Uint, reflect.Uint32, reflect.Int32:
 				fmt.Printf("Found string\n")
 				dv.FieldByIndex(df.Index).Set(sv.FieldByIndex(sf.Index))
 			case reflect.Pointer:
@@ -28,8 +28,11 @@ func OpenApi2Proto(src interface{}, dst proto.Message) {
 				v := dst.Interface()
 				nv := v.(proto.Message)
 				OpenApi2Proto(sv.FieldByIndex(sf.Index).Interface(), nv)
+				dv.FieldByIndex(df.Index).Set(dst)
 			case reflect.Struct:
 				fmt.Printf("Found a struct\n")
+			default:
+				fmt.Printf("Found unknown: %s\n", df.Type.Kind())
 			}
 		} else {
 			fmt.Printf("Missing %s\n", sf.Name)

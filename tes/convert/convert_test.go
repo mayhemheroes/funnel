@@ -12,12 +12,18 @@ func TestTaskConvert(t *testing.T) {
 
 	o := openapi.TesTask{
 		Id: "blaa",
+		Resources: openapi.TesResources{
+			CpuCores: 4,
+		},
 	}
 
 	OpenApi2Proto(o, &p)
 
 	if o.Id != p.Id {
 		t.Errorf("id %s != %s", o.Id, p.Id)
+	}
+	if o.Resources.CpuCores != int64(p.Resources.CpuCores) {
+		t.Errorf("id %d != %d", o.Resources.CpuCores, p.Resources.CpuCores)
 	}
 
 }
