@@ -13,7 +13,7 @@ package openapi
 type TesResources struct {
 
 	// Requested number of CPUs
-	CpuCores int64 `json:"cpu_cores,omitempty"`
+	CpuCores int32 `json:"cpu_cores,omitempty"`
 
 	// Define if the task is allowed to run on preemptible compute instances, for example, AWS Spot. This option may have no effect when utilized on some backends that don't have the concept of preemptible jobs.
 	Preemptible bool `json:"preemptible,omitempty"`
