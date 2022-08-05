@@ -37,5 +37,5 @@ type TaskServiceApiServicer interface {
 	CreateTask(context.Context, TesTask) (ImplResponse, error)
 	GetServiceInfo(context.Context) (ImplResponse, error)
 	GetTask(context.Context, string, string) (ImplResponse, error)
-	ListTasks(context.Context, string, TesState, []string, []string, int32, string, string) (ImplResponse, error)
+	ListTasks(context.Context, string, TesState, []string, []string, int64, string, string) (ImplResponse, error)
 }

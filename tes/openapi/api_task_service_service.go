@@ -71,7 +71,7 @@ func (s *TaskServiceApiService) GetTask(ctx context.Context, id string, view str
 }
 
 // ListTasks - ListTasks
-func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string, state TesState, tagKey []string, tagValue []string, pageSize int32, pageToken string, view string) (ImplResponse, error) {
+func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string, state TesState, tagKey []string, tagValue []string, pageSize int64, pageToken string, view string) (ImplResponse, error) {
 	// TODO - update ListTasks with the required logic for this service method.
 	// Add api_task_service_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 

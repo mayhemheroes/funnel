@@ -27,7 +27,7 @@ type Server struct {
 	RPCAddress       string
 	HTTPPort         string
 	BasicAuth        []config.BasicCredential
-	Tasks            *openapi.TaskServiceApiService
+	Tasks            openapi.TaskServiceApiServicer
 	Events           events.EventServiceServer
 	Nodes            scheduler.SchedulerServiceServer
 	DisableHTTPCache bool
@@ -117,9 +117,11 @@ func (s *Server) Serve(pctx context.Context) error {
 
 	// Register TES service
 	if s.Tasks != nil {
+		s.Log.Info("Registering OpenAPI Controller")
 		TaskServiceApiController := openapi.NewTaskServiceApiController(s.Tasks)
 		router := openapi.NewRouter(TaskServiceApiController)
-		router.HandleFunc("/v1/", func(resp http.ResponseWriter, req *http.Request) {
+		router.HandleFunc("/ga4gh", func(resp http.ResponseWriter, req *http.Request) {
+			s.Log.Info("Getting : %s", req.URL.Path)
 			router.ServeHTTP(resp, req)
 		})
 	}

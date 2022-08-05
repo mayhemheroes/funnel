@@ -30,6 +30,14 @@ type Enum struct {
 	Values []interface{}
 }
 
+type ServicePath struct {
+	Name       string
+	Path       string
+	Mode       string
+	InputType  string
+	OutputType string
+}
+
 func getType(p *openapi3.SchemaRef) (bool, string) {
 	switch p.Value.Type {
 	case "integer":
@@ -66,7 +74,7 @@ func getType(p *openapi3.SchemaRef) (bool, string) {
 }
 
 func getParamType(param *openapi3.Parameter) (bool, string) {
-	log.Printf("Param %#v\n", param)
+	//log.Printf("Param %#v\n", param)
 
 	if param.Schema.Ref != "" {
 		t := strings.Split(param.Schema.Ref, "/")
@@ -142,7 +150,7 @@ func parseMessageEnum(name string, schema *openapi3.SchemaRef) (Enum, error) {
 	return e, nil
 }
 
-func cleanSchema(messages []Message, enums []Enum) {
+func cleanSchema(messages []Message, enums []Enum, services []ServicePath) {
 	sort.SliceStable(messages, func(i, j int) bool { return messages[i].Name < messages[j].Name })
 
 	var prefixRemove = "tes"
@@ -157,6 +165,16 @@ func cleanSchema(messages []Message, enums []Enum) {
 		enums[i].Name = strings.TrimPrefix(enums[i].Name, prefixRemove)
 	}
 
+	for i := range services {
+		services[i].InputType = strings.TrimPrefix(services[i].InputType, prefixRemove)
+		services[i].OutputType = strings.TrimPrefix(services[i].OutputType, prefixRemove)
+	}
+}
+
+func getResponseMessage(resp *openapi3.Responses) string {
+	schema := resp.Get(200).Value.Content.Get("application/json").Schema
+	s := strings.Split(schema.Ref, "/")
+	return s[len(s)-1]
 }
 
 func main() {
@@ -171,6 +189,8 @@ func main() {
 
 	messages := []Message{}
 	enums := []Enum{}
+
+	service := []ServicePath{}
 
 	if err != nil {
 		log.Printf("Parsing Error: %s\n", err)
@@ -200,7 +220,7 @@ func main() {
 
 		for path, req := range doc.Paths {
 			if req.Get != nil {
-				log.Printf("Get: %s %s\n", path, req.Get.OperationID)
+				//log.Printf("Get: %s %s\n", path, req.Get.OperationID)
 				reqFields := []Field{}
 				for _, param := range req.Get.Parameters {
 					r, t := getParamType(param.Value)
@@ -211,7 +231,9 @@ func main() {
 				}
 				m := Message{Name: req.Get.OperationID + "Request", Fields: reqFields}
 				messages = append(messages, m)
-			} else if req.Post != nil {
+
+			}
+			if req.Post != nil {
 				log.Printf("Post: %s %s\n", path, req.Post.OperationID)
 				reqFields := []Field{}
 				for _, param := range req.Post.Parameters {
@@ -221,13 +243,45 @@ func main() {
 				for i := range reqFields {
 					reqFields[i].Id = i + 1
 				}
-				m := Message{Name: req.Post.OperationID + "Request", Fields: reqFields}
-				messages = append(messages, m)
+				if req.Post.RequestBody != nil {
+					//if not a reference to schema, build it
+				} else {
+					m := Message{Name: req.Post.OperationID + "Request", Fields: reqFields}
+					messages = append(messages, m)
+				}
 			}
 		}
+
+		for path, req := range doc.Paths {
+			p := ServicePath{}
+			if req.Get != nil {
+				p.Name = req.Get.OperationID
+				p.Path = path
+				p.Mode = "get"
+				p.InputType = req.Get.OperationID + "Request"
+				p.OutputType = getResponseMessage(&req.Get.Responses)
+				service = append(service, p)
+			}
+			if req.Post != nil {
+				p.Name = req.Post.OperationID
+				p.Path = path
+				p.Mode = "post"
+				if req.Post.RequestBody != nil {
+					s := req.Post.RequestBody.Value.Content.Get("application/json").Schema.Ref
+					sL := strings.Split(s, "/")
+					p.InputType = sL[len(sL)-1]
+					log.Printf("post %s ref %s", path, p.InputType)
+				} else {
+					p.InputType = req.Post.OperationID + "Request"
+				}
+				p.OutputType = getResponseMessage(&req.Post.Responses)
+				service = append(service, p)
+			}
+		}
+
 	}
 
-	cleanSchema(messages, enums)
+	cleanSchema(messages, enums, service)
 
 	tmpl, err := template.New("proto").Parse(`
 syntax = "proto3";
@@ -235,6 +289,8 @@ syntax = "proto3";
 option go_package = "github.com/ohsu-comp-bio/funnel/tes";
 
 package tes;
+
+import "google/api/annotations.proto";
 
 {{range $i, $enum := .enums}}
 enum {{$enum.Name}} { {{range $j, $value := $enum.Values}}
@@ -247,12 +303,24 @@ message {{$message.Name}} { {{range $j, $field := $message.Fields}}
 }
 {{end}}
 
+service TaskService {
+{{range $i, $path := .services}}
+    rpc {{$path.Name}}({{$path.InputType}}) returns ({{$path.OutputType}}) {
+      option (google.api.http) = {
+        {{$path.Mode}}: "{{$path.Path}}"
+		{{- if eq $path.Mode "post"}}
+		body: "*"{{end}}
+      };
+    }
+{{end}}
+}
+
 `)
 
 	_ = tmpl
 	if err != nil {
 		fmt.Printf("Template Error: %s\n", err)
 	} else {
-		tmpl.Execute(os.Stdout, map[string]interface{}{"messages": messages, "enums": enums})
+		tmpl.Execute(os.Stdout, map[string]interface{}{"messages": messages, "enums": enums, "services": service})
 	}
 }

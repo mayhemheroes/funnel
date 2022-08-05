@@ -3,32 +3,27 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
-	"github.com/ohsu-comp-bio/funnel/events"
-	"github.com/ohsu-comp-bio/funnel/logger"
 	"github.com/ohsu-comp-bio/funnel/tes"
 	"github.com/ohsu-comp-bio/funnel/tes/openapi"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 )
 
 // TaskServiceApiService is a service that implents the logic for the TaskServiceApiServicer
 // This service should implement the business logic for every endpoint for the TaskServiceApi API.
 // Include any external packages or services that will be required by this service.
 type TaskServiceApiService struct {
-	Name    string
-	Event   events.Writer
-	Compute events.Writer
-	Read    tes.ReadOnlyServer
-	Log     *logger.Logger
+	server *TaskService
+}
+
+func NewOpenApiServer(srv *TaskService) *TaskServiceApiService {
+	return &TaskServiceApiService{srv}
 }
 
 // NewTaskServiceApiService creates a default api service
-func NewTaskServiceApiService() openapi.TaskServiceApiServicer {
-	return &TaskServiceApiService{}
-}
+//func NewTaskServiceApiService() openapi.TaskServiceApiServicer {
+//	return &TaskServiceApiService{}
+//}
 
 // CancelTask - CancelTask
 func (s *TaskServiceApiService) CancelTask(ctx context.Context, id string) (openapi.ImplResponse, error) {
@@ -43,33 +38,16 @@ func (s *TaskServiceApiService) CancelTask(ctx context.Context, id string) (open
 
 // CreateTask - CreateTask
 func (s *TaskServiceApiService) CreateTask(ctx context.Context, body openapi.TesTask) (openapi.ImplResponse, error) {
-	// TODO - update CreateTask with the required logic for this service method.
-	// Add api_task_service_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+	task := &tes.Task{}
+	tes.OpenApi2Proto(body, task)
 
-	//TODO: Uncomment the next line to return response Response(200, TesCreateTaskResponse{}) or use other options such as http.Ok ...
-	//return Response(200, TesCreateTaskResponse{}), nil
+	res, err := s.server.CreateTask(ctx, task)
 
-	task := convert.OpenAPIToProtoTask(body)
-
-	if err := tes.InitTask(task, true); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+	if err != nil {
+		return openapi.Response(500, err), nil
 	}
 
-	if err := ts.Event.WriteEvent(ctx, events.NewTaskCreated(task)); err != nil {
-		return nil, fmt.Errorf("error creating task: %s", err)
-	}
-
-	// dispatch to compute backend
-	go func() {
-		err := ts.Compute.WriteEvent(ctx, events.NewTaskCreated(task))
-		if err != nil {
-			ts.Log.Error("error submitting task to compute backend", "taskID", task.Id, "error", err)
-		}
-	}()
-
-	return &tes.CreateTaskResponse{Id: task.Id}, nil
-
-	return openapi.Response(http.StatusNotImplemented, nil), errors.New("CreateTask method not implemented")
+	return openapi.Response(200, openapi.TesCreateTaskResponse{Id: res.Id}), nil
 }
 
 // GetServiceInfo - GetServiceInfo
@@ -85,22 +63,37 @@ func (s *TaskServiceApiService) GetServiceInfo(ctx context.Context) (openapi.Imp
 
 // GetTask - GetTask
 func (s *TaskServiceApiService) GetTask(ctx context.Context, id string, view string) (openapi.ImplResponse, error) {
-	// TODO - update GetTask with the required logic for this service method.
-	// Add api_task_service_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
 
-	//TODO: Uncomment the next line to return response Response(200, TesTask{}) or use other options such as http.Ok ...
-	//return Response(200, TesTask{}), nil
+	req := &tes.GetTaskRequest{Id: id, View: view}
 
-	return openapi.Response(http.StatusNotImplemented, nil), errors.New("GetTask method not implemented")
+	task, err := s.server.GetTask(ctx, req)
+
+	if err != nil {
+		return openapi.Response(http.StatusNotFound, nil), nil
+	}
+
+	o := openapi.TesTask{}
+	tes.Proto2OpenApi(task, &o)
+	return openapi.Response(200, o), err
 }
 
 // ListTasks - ListTasks
-func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string, state openapi.TesState, tagKey []string, tagValue []string, pageSize int32, pageToken string, view string) (openapi.ImplResponse, error) {
-	// TODO - update ListTasks with the required logic for this service method.
-	// Add api_task_service_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
+func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string,
+	state openapi.TesState, tagKey []string, tagValue []string,
+	pageSize int64, pageToken string, view string) (openapi.ImplResponse, error) {
 
-	//TODO: Uncomment the next line to return response Response(200, TesListTasksResponse{}) or use other options such as http.Ok ...
-	//return Response(200, TesListTasksResponse{}), nil
+	req := &tes.ListTasksRequest{
+		NamePrefix: namePrefix,
+		//State:      state,
+	}
 
-	return openapi.Response(http.StatusNotImplemented, nil), errors.New("ListTasks method not implemented")
+	out, err := s.server.ListTasks(ctx, req)
+	if err != nil {
+		return openapi.Response(http.StatusNotFound, nil), nil
+	}
+
+	resp := openapi.TesListTasksResponse{}
+	tes.Proto2OpenApi(out, resp)
+
+	return openapi.Response(200, resp), err
 }

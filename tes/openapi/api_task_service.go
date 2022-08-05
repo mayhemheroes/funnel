@@ -161,7 +161,7 @@ func (c *TaskServiceApiController) ListTasks(w http.ResponseWriter, r *http.Requ
 	stateParam := TesState(  query.Get("state") )
 	tagKeyParam := strings.Split(query.Get("tag_key"), ",")
 	tagValueParam := strings.Split(query.Get("tag_value"), ",")
-	pageSizeParam, err := parseInt32Parameter(query.Get("page_size"), false)
+	pageSizeParam, err := parseInt64Parameter(query.Get("page_size"), false)
 	if err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return

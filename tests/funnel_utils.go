@@ -25,6 +25,7 @@ import (
 	"github.com/ohsu-comp-bio/funnel/logger"
 	"github.com/ohsu-comp-bio/funnel/server"
 	"github.com/ohsu-comp-bio/funnel/tes"
+	"github.com/ohsu-comp-bio/funnel/tes/openapi"
 	"github.com/ohsu-comp-bio/funnel/util/dockerutil"
 	"github.com/ohsu-comp-bio/funnel/util/rpc"
 	"golang.org/x/net/context"
@@ -442,10 +443,10 @@ func (f *Funnel) CleanupTestServerContainer(containerName string) {
 }
 
 // HelloWorld is a simple, valid task that is easy to reuse in tests.
-func HelloWorld() *tes.Task {
-	return &tes.Task{
+func HelloWorld() openapi.TesTask {
+	return openapi.TesTask{
 		Id: tes.GenerateID(),
-		Executors: []*tes.Executor{
+		Executors: []openapi.TesExecutor{
 			{
 				Image:   "alpine",
 				Command: []string{"echo", "hello world"},

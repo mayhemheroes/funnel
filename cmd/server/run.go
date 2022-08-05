@@ -258,6 +258,16 @@ func NewServer(ctx context.Context, conf config.Config, log *logger.Logger) (*Se
 		go metrics.WatchNodes(ctx, nodes)
 	}
 
+	grpcServer := &server.TaskService{
+		Name:    conf.Server.ServiceName,
+		Event:   writer,
+		Compute: compute,
+		Read:    reader,
+		Log:     log,
+	}
+
+	openapiServer := server.NewOpenApiServer(grpcServer)
+
 	return &Server{
 		Server: &server.Server{
 			RPCAddress:       ":" + conf.Server.RPCPort,
@@ -265,15 +275,9 @@ func NewServer(ctx context.Context, conf config.Config, log *logger.Logger) (*Se
 			BasicAuth:        conf.Server.BasicAuth,
 			DisableHTTPCache: conf.Server.DisableHTTPCache,
 			Log:              log,
-			Tasks: &server.TaskService{
-				Name:    conf.Server.ServiceName,
-				Event:   writer,
-				Compute: compute,
-				Read:    reader,
-				Log:     log,
-			},
-			Events: &events.Service{Writer: writer},
-			Nodes:  nodes,
+			Tasks:            openapiServer,
+			Events:           &events.Service{Writer: writer},
+			Nodes:            nodes,
 		},
 		Scheduler: sched,
 	}, nil

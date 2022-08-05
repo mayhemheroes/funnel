@@ -1,11 +1,10 @@
-package convert
+package tes
 
 import (
 	"fmt"
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/ohsu-comp-bio/funnel/tes"
 	"github.com/ohsu-comp-bio/funnel/tes/openapi"
 )
 
@@ -23,12 +22,12 @@ func OpenApi2Proto(src interface{}, dst proto.Message) {
 			switch df.Type.Kind() {
 			case reflect.String, reflect.Int, reflect.Uint, reflect.Uint32, reflect.Int32, reflect.Float32, reflect.Float64:
 				//fmt.Printf("Found string %s\n", sf.Name)
-				if df.Type == reflect.TypeOf(tes.State_UNKNOWN) {
+				if df.Type == reflect.TypeOf(State_UNKNOWN) {
 					state := sv.FieldByIndex(sf.Index).Interface().(openapi.TesState)
-					dv.FieldByIndex(df.Index).Set(reflect.ValueOf(tes.State(tes.State_value[string(state)])))
-				} else if df.Type == reflect.TypeOf(tes.FileType_FILE) {
+					dv.FieldByIndex(df.Index).Set(reflect.ValueOf(State(State_value[string(state)])))
+				} else if df.Type == reflect.TypeOf(FileType_FILE) {
 					state := sv.FieldByIndex(sf.Index).Interface().(openapi.TesFileType)
-					dv.FieldByIndex(df.Index).Set(reflect.ValueOf(tes.FileType(tes.FileType_value[string(state)])))
+					dv.FieldByIndex(df.Index).Set(reflect.ValueOf(FileType(FileType_value[string(state)])))
 				} else {
 					dv.FieldByIndex(df.Index).Set(sv.FieldByIndex(sf.Index))
 				}
@@ -58,12 +57,20 @@ func OpenApi2Proto(src interface{}, dst proto.Message) {
 					v := dst.Interface()
 					fmt.Printf("Slice dest: %T\n", v)
 				}
-				/*
-					for i := 0; i < sfv.Len(); i++ {
-						siv := sfv.Index(i)
+			/*
+				for i := 0; i < sfv.Len(); i++ {
+					siv := sfv.Index(i)
 
-					}
-				*/
+				}
+			*/
+			case reflect.Map:
+				smv := sv.FieldByIndex(sf.Index)
+				dmv := reflect.MakeMap(df.Type)
+				for _, kv := range smv.MapKeys() {
+					vv := smv.MapIndex(kv)
+					dmv.SetMapIndex(kv, vv)
+				}
+				dv.FieldByIndex(df.Index).Set(dmv)
 			case reflect.Struct:
 				//fmt.Printf("Found a struct\n")
 			default:

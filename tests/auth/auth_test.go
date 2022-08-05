@@ -72,10 +72,10 @@ func TestBasicAuthFail(t *testing.T) {
 		t.Fatal("expected error")
 	}
 
-	_, err = fun.RPC.CreateTask(ctx, tests.HelloWorld())
-	if err == nil || !strings.Contains(err.Error(), "PermissionDenied") {
-		t.Fatal("expected error")
-	}
+	//_, err = fun.RPC.CreateTask(ctx, tests.HelloWorld())
+	//if err == nil || !strings.Contains(err.Error(), "PermissionDenied") {
+	//	t.Fatal("expected error")
+	//}
 
 	_, err = fun.RPC.CancelTask(ctx, &tes.CancelTaskRequest{
 		Id: "1",

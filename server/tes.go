@@ -5,7 +5,6 @@ import (
 
 	"github.com/ohsu-comp-bio/funnel/events"
 	"github.com/ohsu-comp-bio/funnel/logger"
-	"github.com/ohsu-comp-bio/funnel/metrics"
 	"github.com/ohsu-comp-bio/funnel/tes"
 	"github.com/ohsu-comp-bio/funnel/version"
 	"golang.org/x/net/context"
@@ -38,13 +37,13 @@ func (ts *TaskService) CreateTask(ctx context.Context, task *tes.Task) (*tes.Cre
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := ts.Event.WriteEvent(ctx, events.NewTaskCreated(task)); err != nil {
+	if _, err := ts.Event.WriteEvent(ctx, events.NewTaskCreated(task)); err != nil {
 		return nil, fmt.Errorf("error creating task: %s", err)
 	}
 
 	// dispatch to compute backend
 	go func() {
-		err := ts.Compute.WriteEvent(ctx, events.NewTaskCreated(task))
+		_, err := ts.Compute.WriteEvent(ctx, events.NewTaskCreated(task))
 		if err != nil {
 			ts.Log.Error("error submitting task to compute backend", "taskID", task.Id, "error", err)
 		}
@@ -87,25 +86,27 @@ func (ts *TaskService) CancelTask(ctx context.Context, req *tes.CancelTaskReques
 // GetServiceInfo returns service metadata.
 func (ts *TaskService) GetServiceInfo(ctx context.Context, info *tes.GetServiceInfoRequest) (*tes.ServiceInfo, error) {
 	resp := &tes.ServiceInfo{
-		Name: ts.Name,
-		Doc:  version.String(),
+		Name:        ts.Name,
+		Description: version.String(),
 	}
 
-	if c, ok := ts.Read.(metrics.TaskStateCounter); ok {
-		resp.TaskStateCounts = make(map[string]int32)
-		// Ensure that all states are present in the response, even if zero.
-		for key := range tes.State_value {
-			resp.TaskStateCounts[key] = 0
+	/*
+		if c, ok := ts.Read.(metrics.TaskStateCounter); ok {
+			resp.TaskStateCounts = make(map[string]int32)
+			// Ensure that all states are present in the response, even if zero.
+			for key := range tes.State_value {
+				resp.TaskStateCounts[key] = 0
+			}
+			cs, err := c.TaskStateCounts(ctx)
+			if err != nil {
+				ts.Log.Error("counting task states", "error", err)
+			}
+			// Override the zero values in the response.
+			for key, count := range cs {
+				resp.TaskStateCounts[key] = count
+			}
 		}
-		cs, err := c.TaskStateCounts(ctx)
-		if err != nil {
-			ts.Log.Error("counting task states", "error", err)
-		}
-		// Override the zero values in the response.
-		for key, count := range cs {
-			resp.TaskStateCounts[key] = count
-		}
-	}
+	*/
 
 	return resp, nil
 }
