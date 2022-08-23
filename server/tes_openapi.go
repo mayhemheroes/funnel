@@ -52,26 +52,22 @@ func (s *TaskServiceApiService) CreateTask(ctx context.Context, body openapi.Tes
 
 // GetServiceInfo - GetServiceInfo
 func (s *TaskServiceApiService) GetServiceInfo(ctx context.Context) (openapi.ImplResponse, error) {
-	// TODO - update GetServiceInfo with the required logic for this service method.
-	// Add api_task_service_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return response Response(200, TesServiceInfo{}) or use other options such as http.Ok ...
-	//return Response(200, TesServiceInfo{}), nil
-
-	return openapi.Response(http.StatusNotImplemented, nil), errors.New("GetServiceInfo method not implemented")
+	resp, err := s.server.GetServiceInfo(ctx, &tes.GetServiceInfoRequest{})
+	if err != nil {
+		return openapi.Response(500, err), nil
+	}
+	out := openapi.TesServiceInfo{}
+	tes.Proto2OpenApi(resp, &out)
+	return openapi.Response(200, out), nil
 }
 
 // GetTask - GetTask
 func (s *TaskServiceApiService) GetTask(ctx context.Context, id string, view string) (openapi.ImplResponse, error) {
-
 	req := &tes.GetTaskRequest{Id: id, View: view}
-
 	task, err := s.server.GetTask(ctx, req)
-
 	if err != nil {
 		return openapi.Response(http.StatusNotFound, nil), nil
 	}
-
 	o := openapi.TesTask{}
 	tes.Proto2OpenApi(task, &o)
 	return openapi.Response(200, o), err
@@ -81,19 +77,15 @@ func (s *TaskServiceApiService) GetTask(ctx context.Context, id string, view str
 func (s *TaskServiceApiService) ListTasks(ctx context.Context, namePrefix string,
 	state openapi.TesState, tagKey []string, tagValue []string,
 	pageSize int64, pageToken string, view string) (openapi.ImplResponse, error) {
-
 	req := &tes.ListTasksRequest{
 		NamePrefix: namePrefix,
 		//State:      state,
 	}
-
 	out, err := s.server.ListTasks(ctx, req)
 	if err != nil {
 		return openapi.Response(http.StatusNotFound, nil), nil
 	}
-
 	resp := openapi.TesListTasksResponse{}
-	tes.Proto2OpenApi(out, resp)
-
+	tes.Proto2OpenApi(out, &resp)
 	return openapi.Response(200, resp), err
 }

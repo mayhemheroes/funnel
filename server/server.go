@@ -2,8 +2,12 @@
 package server
 
 import (
+	"fmt"
 	"net"
 	"net/http"
+	"strings"
+
+	"github.com/gorilla/mux"
 
 	"github.com/golang/gddo/httputil"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -75,6 +79,14 @@ func (s *Server) Serve(pctx context.Context) error {
 		),
 	)
 
+	// Register TES service
+	var openApiRouter *mux.Router
+	if s.Tasks != nil {
+		s.Log.Info("Registering OpenAPI Controller")
+		TaskServiceApiController := openapi.NewTaskServiceApiController(s.Tasks)
+		openApiRouter = openapi.NewRouter(TaskServiceApiController)
+	}
+
 	dialOpts := []grpc.DialOption{
 		grpc.WithInsecure(),
 	}
@@ -99,6 +111,12 @@ func (s *Server) Serve(pctx context.Context) error {
 		if len(s.BasicAuth) > 0 {
 			resp.Header().Set("WWW-Authenticate", "Basic")
 		}
+		s.Log.Info(fmt.Sprintf("Getting : %s", req.URL.Path))
+		if strings.HasPrefix(req.URL.Path, "/ga4gh/") {
+			s.Log.Info(fmt.Sprintf("API Call"))
+			openApiRouter.ServeHTTP(resp, req)
+			return
+		}
 		switch negotiate(req) {
 		case "html":
 			// HTML was requested (by the browser)
@@ -114,17 +132,6 @@ func (s *Server) Serve(pctx context.Context) error {
 			grpcMux.ServeHTTP(resp, req)
 		}
 	})
-
-	// Register TES service
-	if s.Tasks != nil {
-		s.Log.Info("Registering OpenAPI Controller")
-		TaskServiceApiController := openapi.NewTaskServiceApiController(s.Tasks)
-		router := openapi.NewRouter(TaskServiceApiController)
-		router.HandleFunc("/ga4gh", func(resp http.ResponseWriter, req *http.Request) {
-			s.Log.Info("Getting : %s", req.URL.Path)
-			router.ServeHTTP(resp, req)
-		})
-	}
 
 	// Register Events service
 	if s.Events != nil {

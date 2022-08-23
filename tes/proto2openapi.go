@@ -47,14 +47,14 @@ func Proto2OpenApi(src proto.Message, dst interface{}) {
 					}
 					dv.FieldByIndex(df.Index).Set(dstSlice)
 				} else {
-					fmt.Printf("Slice dest %s: %s %s\n", sf.Name, sf.Type.Elem().Kind(), df.Type.Elem().Kind())
+					//fmt.Printf("Slice dest %s: %s %s\n", sf.Name, sf.Type.Elem().Kind(), df.Type.Elem().Kind())
 					dstSlice := reflect.MakeSlice(df.Type, sfv.Len(), sfv.Len())
 					for i := 0; i < sfv.Len(); i++ {
 						div := reflect.New(df.Type.Elem())
 						dii := div.Interface()
 						siv := sfv.Index(i).Interface().(proto.Message)
 						Proto2OpenApi(siv, dii)
-						reflect.Append(dstSlice, div)
+						reflect.Append(dstSlice, div.Elem())
 					}
 					//dv.FieldByIndex(df.Index).Set(dstSlice)
 					//dst := reflect.New(df.Type.Elem())

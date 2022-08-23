@@ -29,6 +29,11 @@ func Validate(t *Task) ValidationError {
 	}
 
 	for i, exec := range t.Executors {
+		if exec == nil {
+			errs.add("Task.Executors[%d]. null value", i)
+			continue
+		}
+
 		if exec.Image == "" {
 			errs.add("Task.Executors[%d].Image: required, but empty", i)
 		}
